@@ -1,3 +1,4 @@
+use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_rapier2d::prelude::*;
@@ -15,7 +16,7 @@ fn main() {
         .add_systems(Startup, setup_graphics)
         .add_systems(Startup, setup_physics)
         //.add_systems(Update, print_ball_altitude)
-        .add_systems(Update, move_ball)
+        .add_systems(Update, (move_ball, restart_ball))
         .run();
 }
 
@@ -33,7 +34,7 @@ fn setup_physics(mut commands: Commands) {
             // RigidBody::Dynamic,
             Collider::cuboid(500.0, 50.0),
             TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)),
-            //Friction::coefficient(0.0),
+            //Friction::coefficient(2.0),
         ));
 
     // this is the ball
@@ -49,7 +50,9 @@ fn setup_physics(mut commands: Commands) {
             TransformBundle::from(Transform::from_xyz(0.0, 400.0, 0.0)),
             ExternalImpulse::default(),
             GravityScale(0.5),
-            ColliderMassProperties::Density(2.0),
+            ColliderMassProperties::Density(1.0),
+            LockedAxes::ROTATION_LOCKED,
+            Damping {linear_damping: 0.1, angular_damping: 0.0},
             //Friction::coefficient(0.0),
             Ball,
         ));
@@ -71,15 +74,21 @@ fn move_ball(
                     let the_impulse = (Vec2::new(transform.translation.x, transform.translation.y) - position)
                     .normalize() * FORCE_STRENGTH;
                     impulse.impulse = the_impulse;
-                    println!("cursor: {:?}, ball: {:?}, force: {:?}", position, transform.translation, the_impulse);
+                    //impulse.torque_impulse = 1.0;
+                    //println!("cursor: {:?}, ball: {:?}, force: {:?}", position, transform.translation, the_impulse);
                 }
             }
         }
-    } else {
-        // for (mut impulse, transform) in query.iter_mut() {
-        //     impulse.impulse = (Vec2::new(transform.translation.x, transform.translation.y) - position)
-        //         .normalize() * FORCE_STRENGTH;
-        //     //println!("cursor: {:?}, ball: {:?}, force: {:?}", position - (window_size * 0.5), transform.translation, force_vector);
-        // }
+    }
+}
+
+fn restart_ball(
+    mut positions: Query<&mut Transform, With<Ball>>,
+    key_presses: Res<ButtonInput<KeyCode>>,
+) {
+    if key_presses.just_pressed(KeyCode::KeyR) {
+        for mut position in positions.iter_mut() {
+            position.translation = Vec3::new(0.0, 400.0, 0.0);
+        }
     }
 }
