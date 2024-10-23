@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_rapier2d::prelude::*;
 
-const FORCE_STRENGTH: f32 = 1000.0;
+const FORCE_STRENGTH: f32 = 99999.9;
 
 #[derive(Component)]
 struct Ball;
@@ -30,7 +30,8 @@ fn setup_physics(mut commands: Commands) {
     // the transform is where its middle will be
     commands
         .spawn(Collider::cuboid(500.0, 50.0))
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)));
+        .insert(TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)))
+        .insert(Friction::coefficient(0.0));
 
     // this is the ball
     // Ridgid body is how this interacts with stuff
@@ -43,38 +44,29 @@ fn setup_physics(mut commands: Commands) {
             Collider::ball(50.0),
             Restitution::coefficient(0.7),
             TransformBundle::from(Transform::from_xyz(0.0, 400.0, 0.0)),
-            ExternalForce::default(),
+            ExternalImpulse::default(),
+            GravityScale(0.3),
+            Friction::coefficient(0.0),
             Ball,
         ));
 }
 
 fn move_ball(
     //mut commands: Commands,
-    mut query: Query<(&mut ExternalForce, &Transform), With<Ball>>,
+    mut query: Query<(&mut ExternalImpulse, &Transform), With<Ball>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
+    mouse_input: Res<ButtonInput<MouseButton>>,
 ) {
-    let window_size = Vec2::new(q_windows.single().width(), q_windows.single().height());
-    if let Some(position) = q_windows.single().cursor_position() {
-        for (mut force, transform) in query.iter_mut() {
-            let force_vector = (Vec2::new(
-                transform.translation.x - (position.x - window_size.x * 0.5), 
-                transform.translation.y - (position.y - window_size.y * 0.5),
-            )) * FORCE_STRENGTH;
-            force.force = (force_vector).into();
-            println!("cursor: {:?}, ball: {:?}, force: {:?}", position - (window_size * 0.5), transform.translation, force_vector);
+    if mouse_input.pressed(MouseButton::Left) {
+        if let Ok(window) = q_windows.get_single() {
+            if let Some(mut position) = window.cursor_position() {
+                position -= Vec2::new(window.width() * 0.5, window.height() * 0.5);
+                for (mut impulse, transform) in query.iter_mut() {
+                    impulse.impulse = (Vec2::new(transform.translation.x, transform.translation.y) - position)
+                        .normalize_or_zero() * FORCE_STRENGTH;
+                    //println!("cursor: {:?}, ball: {:?}, force: {:?}", position - (window_size * 0.5), transform.translation, force_vector);
+                }
+            }
         }
     }
-    // if let Some(position) = q_windows.single().cursor_position() {
-    //     for mut force in query.iter_mut() {
-    //         // Apply force towards the cursor position
-    //         let force_vector = Vec2::new(position.x - 400.0, position.y - 400.0); // example force direction
-    //         force.force = (Vec2::new(force_vector.x, force_vector.y) * FORCE_STRENGTH).into();
-    //     }
-    // }
 }
-
-// fn print_ball_altitude(positions: Query<&Transform, With<RigidBody>>) {
-//     for transform in positions.iter() {
-//         println!("Ball altitude: {}", transform.translation.y);
-//     }
-// }
