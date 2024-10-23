@@ -29,9 +29,12 @@ fn setup_physics(mut commands: Commands) {
     // collider is where the platform will interact with the ball
     // the transform is where its middle will be
     commands
-        .spawn(Collider::cuboid(500.0, 50.0))
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)))
-        .insert(Friction::coefficient(0.0));
+        .spawn((
+            // RigidBody::Dynamic,
+            Collider::cuboid(500.0, 50.0),
+            TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)),
+            //Friction::coefficient(0.0),
+        ));
 
     // this is the ball
     // Ridgid body is how this interacts with stuff
@@ -45,8 +48,9 @@ fn setup_physics(mut commands: Commands) {
             Restitution::coefficient(0.7),
             TransformBundle::from(Transform::from_xyz(0.0, 400.0, 0.0)),
             ExternalImpulse::default(),
-            GravityScale(0.3),
-            Friction::coefficient(0.0),
+            GravityScale(0.5),
+            ColliderMassProperties::Density(2.0),
+            //Friction::coefficient(0.0),
             Ball,
         ));
 }
@@ -61,12 +65,21 @@ fn move_ball(
         if let Ok(window) = q_windows.get_single() {
             if let Some(mut position) = window.cursor_position() {
                 position -= Vec2::new(window.width() * 0.5, window.height() * 0.5);
+                //the y coord come out reversed compared to the position of the ball
+                position.y = -position.y;
                 for (mut impulse, transform) in query.iter_mut() {
-                    impulse.impulse = (Vec2::new(transform.translation.x, transform.translation.y) - position)
-                        .normalize_or_zero() * FORCE_STRENGTH;
-                    //println!("cursor: {:?}, ball: {:?}, force: {:?}", position - (window_size * 0.5), transform.translation, force_vector);
+                    let the_impulse = (Vec2::new(transform.translation.x, transform.translation.y) - position)
+                    .normalize() * FORCE_STRENGTH;
+                    impulse.impulse = the_impulse;
+                    println!("cursor: {:?}, ball: {:?}, force: {:?}", position, transform.translation, the_impulse);
                 }
             }
         }
+    } else {
+        // for (mut impulse, transform) in query.iter_mut() {
+        //     impulse.impulse = (Vec2::new(transform.translation.x, transform.translation.y) - position)
+        //         .normalize() * FORCE_STRENGTH;
+        //     //println!("cursor: {:?}, ball: {:?}, force: {:?}", position - (window_size * 0.5), transform.translation, force_vector);
+        // }
     }
 }
