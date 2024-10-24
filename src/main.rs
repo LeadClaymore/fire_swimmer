@@ -6,6 +6,15 @@ use bevy_rapier2d::prelude::*;
 const FORCE_STRENGTH: f32 = 99999.9;
 
 #[derive(Component)]
+enum Flame_Strngth {
+    Dead,
+    Weak,
+    Normal,
+    Strong,
+    Full,
+}
+
+#[derive(Component)]
 struct Ball;
 
 fn main() {
@@ -13,10 +22,11 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
-        .add_systems(Startup, setup_graphics)
-        .add_systems(Startup, setup_physics)
-        //.add_systems(Update, print_ball_altitude)
-        .add_systems(Update, (move_ball, restart_ball))
+        .add_systems(Startup, (setup_graphics, setup_physics))
+        // TODO move to a scheduling system
+        // movement of the ball 
+        .add_systems(Update, (propell_ball, restart_ball))
+        .add_systems(Update, despawn_particles)
         .run();
 }
 
@@ -27,8 +37,6 @@ fn setup_graphics(mut commands: Commands) {
 
 fn setup_physics(mut commands: Commands) {
     // this is the platform 
-    // collider is where the platform will interact with the ball
-    // the transform is where its middle will be
     commands
         .spawn((
             // RigidBody::Dynamic,
@@ -38,10 +46,6 @@ fn setup_physics(mut commands: Commands) {
         ));
 
     // this is the ball
-    // Ridgid body is how this interacts with stuff
-    // collider is the radius of the ball
-    // restitution is how much bounce it has
-    // the transform is where the ball starts
     commands
         .spawn((
             RigidBody::Dynamic,
@@ -58,8 +62,9 @@ fn setup_physics(mut commands: Commands) {
         ));
 }
 
-fn move_ball(
-    //mut commands: Commands,
+// this handles impulse forces on the ball
+fn propell_ball(
+    mut commands: Commands,
     mut query: Query<(&mut ExternalImpulse, &Transform), With<Ball>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mouse_input: Res<ButtonInput<MouseButton>>,
@@ -72,16 +77,35 @@ fn move_ball(
                 position.y = -position.y;
                 for (mut impulse, transform) in query.iter_mut() {
                     let the_impulse = (Vec2::new(transform.translation.x, transform.translation.y) - position)
-                    .normalize() * FORCE_STRENGTH;
-                    impulse.impulse = the_impulse;
+                    .normalize();
+                    impulse.impulse = the_impulse * FORCE_STRENGTH;
                     //impulse.torque_impulse = 1.0;
                     //println!("cursor: {:?}, ball: {:?}, force: {:?}", position, transform.translation, the_impulse);
+
+                    //spawn particle
+                    commands.spawn((
+                        Flame_Strngth::Full,
+                        RigidBody::Dynamic,
+                        Collider::ball(5.0),
+                        Restitution::coefficient(0.7),
+                        TransformBundle::from(Transform::from_xyz(
+                            transform.translation.x - the_impulse.x * 100.0, 
+                            transform.translation.y - the_impulse.y * 100.0, 
+                            1.0
+                        )),
+                        ExternalImpulse {
+                            impulse: -the_impulse * FORCE_STRENGTH,
+                            torque_impulse: 0.0,
+                        },
+                    ));
+                    println!("spawned flame");
                 }
             }
         }
     }
 }
 
+// when the R key is pressed it resets it to the starting position
 fn restart_ball(
     mut positions: Query<&mut Transform, With<Ball>>,
     key_presses: Res<ButtonInput<KeyCode>>,
@@ -89,6 +113,19 @@ fn restart_ball(
     if key_presses.just_pressed(KeyCode::KeyR) {
         for mut position in positions.iter_mut() {
             position.translation = Vec3::new(0.0, 400.0, 0.0);
+        }
+    }
+}
+
+// despawn particles currently on keypress
+fn despawn_particles (
+    mut commands: Commands,
+    query: Query<Entity, With<Flame_Strngth>>,
+    key_press: Res<ButtonInput<KeyCode>>,
+) {
+    if key_press.just_pressed(KeyCode::KeyL) {
+        for entity in query.iter() {
+            commands.entity(entity).despawn();
         }
     }
 }
