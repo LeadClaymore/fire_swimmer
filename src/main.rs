@@ -1,13 +1,11 @@
-use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_rapier2d::prelude::*;
 
 const FORCE_STRENGTH: f32 = 99999.9;
 
-#[derive(Component)]
-enum Flame_Strngth {
-    Dead,
+#[derive(Debug, Clone, Copy)]
+pub enum FlameStrength {
     Weak,
     Normal,
     Strong,
@@ -15,7 +13,12 @@ enum Flame_Strngth {
 }
 
 #[derive(Component)]
-struct Ball;
+pub struct FlameComponent {
+    pub state: FlameStrength,
+}
+
+#[derive(Component)]
+pub struct Ball;
 
 fn main() {
     App::new()
@@ -84,7 +87,9 @@ fn propell_ball(
 
                     //spawn particle
                     commands.spawn((
-                        Flame_Strngth::Full,
+                        FlameComponent {
+                            state: FlameStrength::Full,
+                        },
                         RigidBody::Dynamic,
                         Collider::ball(5.0),
                         Restitution::coefficient(0.7),
@@ -120,12 +125,17 @@ fn restart_ball(
 // despawn particles currently on keypress
 fn despawn_particles (
     mut commands: Commands,
-    query: Query<Entity, With<Flame_Strngth>>,
+    mut query: Query<(Entity, &mut FlameComponent)>,
     key_press: Res<ButtonInput<KeyCode>>,
 ) {
     if key_press.just_pressed(KeyCode::KeyL) {
-        for entity in query.iter() {
-            commands.entity(entity).despawn();
+        for (entity, mut flame) in query.iter_mut() {
+            match flame.state {
+                FlameStrength::Full => flame.state = FlameStrength::Strong,
+                FlameStrength::Strong => flame.state = FlameStrength::Normal,
+                FlameStrength::Normal => flame.state = FlameStrength::Weak,
+                FlameStrength::Weak => commands.entity(entity).despawn(),
+            }
         }
     }
 }
