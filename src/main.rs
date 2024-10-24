@@ -1,6 +1,8 @@
 use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
 use bevy_rapier2d::prelude::*;
+
+use bevy::window::PrimaryWindow;
+//use bevy::render::camera::Viewport;
 
 const FORCE_STRENGTH: f32 = 99999.9;
 
@@ -20,12 +22,15 @@ pub struct FlameComponent {
 #[derive(Component)]
 pub struct Ball;
 
+#[derive(Component)]
+pub struct MyCamera;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, (setup_graphics, setup_physics))
+        .add_systems(Update, camera_control)
         // TODO move to a scheduling system
         // movement of the ball 
         .add_systems(Update, (propell_ball, restart_ball))
@@ -35,7 +40,10 @@ fn main() {
 
 fn setup_graphics(mut commands: Commands) {
     // this is the default camera
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn((
+        Camera2dBundle::default(),
+        MyCamera,
+    ));
 }
 
 fn setup_physics(mut commands: Commands) {
@@ -64,6 +72,26 @@ fn setup_physics(mut commands: Commands) {
             Ball,
         ));
 }
+
+// camera will follow the x axis of the ball
+fn camera_control(
+    character_query: Query<&Transform, With<Ball>>,
+    mut camera_query: Query<&mut Transform, (With<MyCamera>, Without<Ball>)>,
+) {
+    if let Ok(character_transform) = character_query.get_single() {
+        if let Ok(mut camera_transform) = camera_query.get_single_mut() {
+            camera_transform.translation.x = character_transform.translation.x;
+        } else {
+            //println!("ERROR! camera transform unable to parse");
+        }
+    } else {
+        //println!("ERROR! character transform unable to parse");
+    }
+}
+// learning moment, even though there are no transforms with mycamera and ball, 
+// when we are querying one to be mutable and the other immutable,
+// we need to the query of transforms with mycamera does not contain ball 
+// because we cant query the same component one mutable and the other not
 
 // this handles impulse forces on the ball
 fn propell_ball(
@@ -103,7 +131,7 @@ fn propell_ball(
                             torque_impulse: 0.0,
                         },
                     ));
-                    println!("spawned flame");
+                    //println!("spawned flame");
                 }
             }
         }
@@ -139,3 +167,5 @@ fn despawn_particles (
         }
     }
 }
+
+//end
