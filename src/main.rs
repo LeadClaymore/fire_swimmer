@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use rand::{Rng, SeedableRng};
+use rand::rngs::SmallRng;
 
 use bevy::window::PrimaryWindow;
 //use bevy::render::camera::Viewport;
@@ -24,11 +26,24 @@ pub struct Ball;
 
 #[derive(Component)]
 pub struct MyCamera;
+
+#[derive(Resource)]
+pub struct RngResource {
+    pub rng: rand::rngs::SmallRng,
+}
+
+impl Default for RngResource {
+    fn default() -> Self {
+        Self { rng: SmallRng::from_entropy(), }
+    }
+}
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
+        .insert_resource(RngResource::default())
         .add_systems(Startup, (setup_graphics, setup_physics))
         .add_systems(Update, camera_control)
         // TODO move to a scheduling system
@@ -99,6 +114,7 @@ fn propell_ball(
     mut query: Query<(&mut ExternalImpulse, &Transform), With<Ball>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mouse_input: Res<ButtonInput<MouseButton>>,
+    mut rng: ResMut<RngResource>,
 ) {
     if mouse_input.pressed(MouseButton::Left) {
         if let Ok(window) = q_windows.get_single() {
@@ -122,12 +138,15 @@ fn propell_ball(
                         Collider::ball(5.0),
                         Restitution::coefficient(0.7),
                         TransformBundle::from(Transform::from_xyz(
-                            transform.translation.x - the_impulse.x * 100.0, 
-                            transform.translation.y - the_impulse.y * 100.0, 
+                            transform.translation.x - the_impulse.x * 60.0, 
+                            transform.translation.y - the_impulse.y * 60.0, 
                             1.0
                         )),
                         ExternalImpulse {
-                            impulse: -the_impulse * FORCE_STRENGTH,
+                            impulse: Vec2::new(
+                                -the_impulse.x + rng.rng.gen_range(-1.0..1.0),
+                                -the_impulse.y + rng.rng.gen_range(-1.0..1.0),
+                            ) * FORCE_STRENGTH,
                             torque_impulse: 0.0,
                         },
                     ));
