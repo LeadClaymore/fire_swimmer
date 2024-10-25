@@ -60,7 +60,13 @@ fn main() {
 fn setup_graphics(mut commands: Commands) {
     // this is the default camera
     commands.spawn((
-        Camera2dBundle::default(),
+        Camera2dBundle {
+            projection: OrthographicProjection {
+                scale: 2.0,
+                ..default()
+            },
+            ..default()
+        },
         MyCamera,
     ));
 }
@@ -127,8 +133,11 @@ fn propell_ball(
                 //the y coord come out reversed compared to the position of the ball
                 position.y = -position.y;
                 for (mut impulse, transform) in query.iter_mut() {
-                    let the_impulse = (Vec2::new(transform.translation.x, transform.translation.y) - position)
-                    .normalize();
+                    // the camera is locked y wise but x wise its tracking the main character's x 
+                    // so you only need to consiter the difference in y and the x position of the mouse
+                    // if I locked the y to the charater then I would only need to consiter the mouse position
+                    let the_impulse = Vec2::new(-position.x, transform.translation.y - position.y).normalize();
+                    
                     impulse.impulse = the_impulse * FORCE_STRENGTH;
                     //impulse.torque_impulse = 1.0;
                     //println!("cursor: {:?}, ball: {:?}, force: {:?}", position, transform.translation, the_impulse);
@@ -148,8 +157,8 @@ fn propell_ball(
                         )),
                         ExternalImpulse {
                             impulse: Vec2::new(
-                                -the_impulse.x + rng.rng.gen_range(-1.0..1.0),
-                                -the_impulse.y + rng.rng.gen_range(-1.0..1.0),
+                                -the_impulse.x + rng.rng.gen_range(-0.5..0.5),
+                                -the_impulse.y + rng.rng.gen_range(-0.5..0.5),
                             ) * FORCE_STRENGTH,
                             torque_impulse: 0.0,
                         },
