@@ -21,6 +21,9 @@ pub struct FlameComponent {
     pub state: FlameStrength,
 }
 
+#[derive(Resource)]
+pub struct EmberTimer(Timer);
+
 #[derive(Component)]
 pub struct Ball;
 
@@ -44,6 +47,7 @@ fn main() {
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .insert_resource(RngResource::default())
+        .insert_resource(EmberTimer(Timer::from_seconds(1.0, TimerMode::Repeating)))
         .add_systems(Startup, (setup_graphics, setup_physics))
         .add_systems(Update, camera_control)
         // TODO move to a scheduling system
@@ -169,13 +173,15 @@ fn restart_ball(
     }
 }
 
-// despawn particles currently on keypress
+// the embers fade every tick of the ember timer, when they reach the end they despawn
 fn despawn_particles (
     mut commands: Commands,
     mut query: Query<(Entity, &mut FlameComponent)>,
-    key_press: Res<ButtonInput<KeyCode>>,
+    //key_press: Res<ButtonInput<KeyCode>>,
+    time: Res<Time>,
+    mut ember_timer: ResMut<EmberTimer>,
 ) {
-    if key_press.just_pressed(KeyCode::KeyL) {
+    if ember_timer.0.tick(time.delta()).just_finished() {
         for (entity, mut flame) in query.iter_mut() {
             match flame.state {
                 FlameStrength::Full => flame.state = FlameStrength::Strong,
