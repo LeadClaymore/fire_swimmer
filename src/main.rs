@@ -28,7 +28,7 @@ pub struct EmberTimer(Timer);
 pub struct Ball;
 
 #[derive(Component)]
-pub struct MyCamera;
+pub struct MainCamera;
 
 #[derive(Resource)]
 pub struct RngResource {
@@ -67,7 +67,7 @@ fn setup_graphics(mut commands: Commands) {
             },
             ..default()
         },
-        MyCamera,
+        MainCamera,
     ));
 }
 
@@ -89,6 +89,7 @@ fn setup_physics(mut commands: Commands) {
             Restitution::coefficient(0.7),
             TransformBundle::from(Transform::from_xyz(0.0, 400.0, 0.0)),
             ExternalImpulse::default(),
+            Velocity::default(),
             GravityScale(0.5),
             ColliderMassProperties::Density(1.0),
             LockedAxes::ROTATION_LOCKED,
@@ -101,7 +102,7 @@ fn setup_physics(mut commands: Commands) {
 // camera will follow the x axis of the ball
 fn camera_control(
     character_query: Query<&Transform, With<Ball>>,
-    mut camera_query: Query<&mut Transform, (With<MyCamera>, Without<Ball>)>,
+    mut camera_query: Query<&mut Transform, (With<MainCamera>, Without<Ball>)>,
 ) {
     if let Ok(character_transform) = character_query.get_single() {
         if let Ok(mut camera_transform) = camera_query.get_single_mut() {
@@ -113,9 +114,9 @@ fn camera_control(
         //println!("ERROR! character transform unable to parse");
     }
 }
-// learning moment, even though there are no transforms with mycamera and ball, 
+// learning moment, even though there are no transforms with MainCamera and ball, 
 // when we are querying one to be mutable and the other immutable,
-// we need to the query of transforms with mycamera does not contain ball 
+// we need to the query of transforms with MainCamera does not contain ball 
 // because we cant query the same component one mutable and the other not
 
 // this handles impulse forces on the ball
@@ -172,12 +173,14 @@ fn propell_ball(
 
 // when the R key is pressed it resets it to the starting position
 fn restart_ball(
-    mut positions: Query<&mut Transform, With<Ball>>,
+    mut entity_phys: Query<(&mut ExternalImpulse, &mut Velocity, &mut Transform), With<Ball>>,
     key_presses: Res<ButtonInput<KeyCode>>,
 ) {
     if key_presses.just_pressed(KeyCode::KeyR) {
-        for mut position in positions.iter_mut() {
+        for (mut impulse, mut velocity, mut position) in entity_phys.iter_mut() {
             position.translation = Vec3::new(0.0, 400.0, 0.0);
+            impulse.impulse = Vec2::ZERO;
+            velocity.linvel = Vec2::ZERO;
         }
     }
 }
