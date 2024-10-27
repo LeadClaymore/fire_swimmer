@@ -52,7 +52,7 @@ fn main() {
         .add_systems(Update, camera_control)
         // TODO move to a scheduling system
         // movement of the ball 
-        .add_systems(Update, (propell_ball, restart_ball))
+        .add_systems(Update, (propell_ball, restart_ball, character_movement))
         .add_systems(Update, despawn_particles)
         .run();
 }
@@ -205,4 +205,39 @@ fn despawn_particles (
     }
 }
 
+fn character_movement(
+    mut velocity: Query<&mut Velocity, With<Ball>>,
+    key_presses: Res<ButtonInput<KeyCode>>,
+) {
+    //I dont want to waste resources checking if it should move unless one of the keys are being pressed
+    if key_presses.any_pressed([KeyCode::KeyW, KeyCode::KeyA, KeyCode::KeyS, KeyCode::KeyD, KeyCode::Space]) {
+        // if it is then change the velocitys
+        for mut velo in velocity.iter_mut() {
+            // W key
+            if key_presses.pressed(KeyCode::KeyW) {
+                velo.linvel += Vec2::new(0.0, 2.0);
+            }
+
+            // A Key
+            if key_presses.pressed(KeyCode::KeyA) {
+                velo.linvel += Vec2::new(-2.0, 2.0);
+            }
+
+            // S key
+            if key_presses.pressed(KeyCode::KeyS) {
+                velo.linvel += Vec2::new(0.0, -2.0);
+            }
+
+            // D key
+            if key_presses.pressed(KeyCode::KeyD) {
+                velo.linvel += Vec2::new(2.0, 0.0);
+            }
+
+            // Either add this to WKey or move to inpulse
+            if key_presses.pressed(KeyCode::Space) {
+                velo.linvel += Vec2::new(0.0, 2.0);
+            }
+        }
+    }
+}
 //end
