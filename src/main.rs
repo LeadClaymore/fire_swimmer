@@ -57,23 +57,6 @@ impl Default for RngResource {
     }
 }
 
-fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
-        .add_plugins(RapierDebugRenderPlugin::default())
-        .insert_resource(RngResource::default())
-        .insert_resource(EmberTimer(Timer::from_seconds(1.0, TimerMode::Repeating)))
-        .add_systems(Startup, (setup_graphics, setup_physics))
-        .add_systems(Update, camera_control)
-        // TODO move to a scheduling system
-        // movement of the ball 
-        .add_systems(Update, (propell_ball, restart_ball))
-        .add_systems(Update, character_movement)
-        .add_systems(Update, despawn_particles)
-        .run();
-}
-
 fn setup_graphics(mut commands: Commands) {
     // this is the default camera
     commands.spawn((
@@ -232,13 +215,13 @@ fn despawn_particles (
 //TODO I dont need mut for transform rn, but IDK how to to iter_mut with 1 mut and another not
 fn character_movement(
     rc: Res<RapierContext>,
-    mut entity_properties: Query<(&mut Velocity, &mut Transform), With<Ball>>,
+    mut entity_properties: Query<(&mut ExternalImpulse, &mut Velocity, &mut Transform), With<Ball>>,
     key_presses: Res<ButtonInput<KeyCode>>,
 ) {
     //I dont want to waste resources checking if it should move unless one of the keys are being pressed
     if key_presses.any_pressed([KeyCode::KeyW, KeyCode::KeyA, KeyCode::KeyS, KeyCode::KeyD, KeyCode::Space]) {
         // get the pos and vel of the ball
-        for (mut velo , pos)in entity_properties.iter_mut() {
+        for (mut imp, mut velo , pos)in entity_properties.iter_mut() {
             // this checks if theres an entity below the shpere within 2m
             //TODO make a filter for components With<BlockInfo>
             if let Some((_entity, _toi)) = &rc.cast_ray(
@@ -249,21 +232,21 @@ fn character_movement(
                 QueryFilter::default(),
             ) {
                 // TODO Either add this to WKey or move to inpulse
-                if key_presses.pressed(KeyCode::Space) {
-                    velo.linvel += Vec2::new(0.0, 2.0);
+                if key_presses.just_pressed(KeyCode::Space) {
+                    imp.impulse += Vec2::new(0.0, 30.0 * FORCE_STRENGTH);
                 }
                 
-                // W key
-                if key_presses.pressed(KeyCode::KeyW) {
-                    velo.linvel += Vec2::new(0.0, 2.0);
-                }
+                // moveing up. use this when added swimming
+                // if key_presses.pressed(KeyCode::KeyW) {
+                //     velo.linvel += Vec2::new(0.0, 2.0);
+                // }
             } else {
                 //TODO falling
             }
             //TODO for now this allows air strafing and fast falling
             // moving left
             if key_presses.pressed(KeyCode::KeyA) {
-                velo.linvel += Vec2::new(-2.0, 2.0);
+                velo.linvel += Vec2::new(-2.0, 0.0);
             }
 
             // fast falling
@@ -277,5 +260,22 @@ fn character_movement(
             }
         }
     }
+}
+
+fn main() {
+    App::new()
+        .add_plugins(DefaultPlugins)
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugins(RapierDebugRenderPlugin::default())
+        .insert_resource(RngResource::default())
+        .insert_resource(EmberTimer(Timer::from_seconds(1.0, TimerMode::Repeating)))
+        .add_systems(Startup, (setup_graphics, setup_physics))
+        .add_systems(Update, camera_control)
+        // TODO move to a scheduling system
+        // movement of the ball 
+        .add_systems(Update, (propell_ball, restart_ball))
+        .add_systems(Update, character_movement)
+        .add_systems(Update, despawn_particles)
+        .run();
 }
 //end
