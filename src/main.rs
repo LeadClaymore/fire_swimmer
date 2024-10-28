@@ -41,7 +41,21 @@ pub struct FlameComponent {
 pub struct EmberTimer(Timer);
 
 #[derive(Component)]
-pub struct Ball;
+pub struct Scorch {
+    /// max life for scorch
+    pub max_flame: f32,
+    /// current life for scorch
+    pub curr_flame: f32,
+    
+    // pub FlameForce: f32,
+
+    // pub DoubleJump: bool,
+    // pub UnlockedDJ: bool,
+
+    // pub Dash: bool,
+    // pub UnlockedDash: bool,
+    // pub UnlockedAirDash: bool,
+}
 
 #[derive(Component)]
 pub struct MainCamera;
@@ -88,7 +102,7 @@ fn setup_physics(mut commands: Commands) {
             //Friction::coefficient(2.0),
         ));
 
-    // this is the ball
+    // this is the Scorch
     commands
         .spawn((
             RigidBody::Dynamic,
@@ -102,14 +116,17 @@ fn setup_physics(mut commands: Commands) {
             LockedAxes::ROTATION_LOCKED,
             Damping {linear_damping: 0.1, angular_damping: 0.0},
             //Friction::coefficient(0.0),
-            Ball,
+            Scorch {
+                max_flame: 10.0,
+                curr_flame: 10.0,
+            },
         ));
 }
 
-// camera will follow the x axis of the ball
+// camera will follow the x axis of the Scorch
 fn camera_control(
-    character_query: Query<&Transform, With<Ball>>,
-    mut camera_query: Query<&mut Transform, (With<MainCamera>, Without<Ball>)>,
+    character_query: Query<&Transform, With<Scorch>>,
+    mut camera_query: Query<&mut Transform, (With<MainCamera>, Without<Scorch>)>,
 ) {
     if let Ok(character_transform) = character_query.get_single() {
         if let Ok(mut camera_transform) = camera_query.get_single_mut() {
@@ -121,15 +138,15 @@ fn camera_control(
         //println!("ERROR! character transform unable to parse");
     }
 }
-// learning moment, even though there are no transforms with MainCamera and ball, 
+// learning moment, even though there are no transforms with MainCamera and Scorch, 
 // when we are querying one to be mutable and the other immutable,
-// we need to the query of transforms with MainCamera does not contain ball 
+// we need to the query of transforms with MainCamera does not contain Scorch 
 // because we cant query the same component one mutable and the other not
 
-// this handles impulse forces on the ball
-fn propell_ball(
+// this handles impulse forces on the Scorch
+fn propell_scorch(
     mut commands: Commands,
-    mut query: Query<(&mut ExternalImpulse, &Transform), With<Ball>>,
+    mut query: Query<(&mut ExternalImpulse, &Transform), With<Scorch>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mouse_input: Res<ButtonInput<MouseButton>>,
     mut rng: ResMut<RngResource>,
@@ -138,7 +155,7 @@ fn propell_ball(
         if let Ok(window) = q_windows.get_single() {
             if let Some(mut position) = window.cursor_position() {
                 position -= Vec2::new(window.width() * 0.5, window.height() * 0.5);
-                //the y coord come out reversed compared to the position of the ball
+                //the y coord come out reversed compared to the position of the Scorch
                 position.y = -position.y;
                 for (mut impulse, transform) in query.iter_mut() {
                     // the camera is locked y wise but x wise its tracking the main character's x 
@@ -148,7 +165,7 @@ fn propell_ball(
                     
                     impulse.impulse = the_impulse * FORCE_STRENGTH;
                     //impulse.torque_impulse = 1.0;
-                    //println!("cursor: {:?}, ball: {:?}, force: {:?}", position, transform.translation, the_impulse);
+                    //println!("cursor: {:?}, Scorch: {:?}, force: {:?}", position, transform.translation, the_impulse);
 
                     //spawn particle
                     commands.spawn((
@@ -179,8 +196,8 @@ fn propell_ball(
 }
 
 // when the R key is pressed it resets it to the starting position
-fn restart_ball(
-    mut entity_phys: Query<(&mut ExternalImpulse, &mut Velocity, &mut Transform), With<Ball>>,
+fn restart_scorch(
+    mut entity_phys: Query<(&mut ExternalImpulse, &mut Velocity, &mut Transform), With<Scorch>>,
     key_presses: Res<ButtonInput<KeyCode>>,
 ) {
     if key_presses.just_pressed(KeyCode::KeyR) {
@@ -215,12 +232,12 @@ fn despawn_particles (
 //TODO I dont need mut for transform rn, but IDK how to to iter_mut with 1 mut and another not
 fn character_movement(
     rc: Res<RapierContext>,
-    mut entity_properties: Query<(&mut ExternalImpulse, &mut Velocity, &mut Transform), With<Ball>>,
+    mut entity_properties: Query<(&mut ExternalImpulse, &mut Velocity, &mut Transform), With<Scorch>>,
     key_presses: Res<ButtonInput<KeyCode>>,
 ) {
     //I dont want to waste resources checking if it should move unless one of the keys are being pressed
     if key_presses.any_pressed([KeyCode::KeyW, KeyCode::KeyA, KeyCode::KeyS, KeyCode::KeyD, KeyCode::Space]) {
-        // get the pos and vel of the ball
+        // get the pos and vel of the Scorch
         for (mut imp, mut velo , pos)in entity_properties.iter_mut() {
             // this checks if theres an entity below the shpere within 2m
             //TODO make a filter for components With<BlockInfo>
@@ -231,15 +248,21 @@ fn character_movement(
                 true,
                 QueryFilter::default(),
             ) {
-                // TODO Either add this to WKey or move to inpulse
+                // jump impulse
                 if key_presses.just_pressed(KeyCode::Space) {
                     imp.impulse += Vec2::new(0.0, 30.0 * FORCE_STRENGTH);
+                    //TODO add double jump
+                    // I think that there could be a resource or component to the character,
+                    // Then when grounded, this is activated (true) and if used before landing you can jump
+                    // When landed it refreshes if (false) but all good because it can only be used when falling
                 }
                 
                 // moveing up. use this when added swimming
                 // if key_presses.pressed(KeyCode::KeyW) {
                 //     velo.linvel += Vec2::new(0.0, 2.0);
                 // }
+
+                //TODO add dashing left and right
             } else {
                 //TODO falling
             }
@@ -272,8 +295,8 @@ fn main() {
         .add_systems(Startup, (setup_graphics, setup_physics))
         .add_systems(Update, camera_control)
         // TODO move to a scheduling system
-        // movement of the ball 
-        .add_systems(Update, (propell_ball, restart_ball))
+        // movement of the Scorch 
+        .add_systems(Update, (propell_scorch, restart_scorch))
         .add_systems(Update, character_movement)
         .add_systems(Update, despawn_particles)
         .run();
