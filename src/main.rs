@@ -220,7 +220,7 @@ fn character_movement(
             if let Some((_entity, _toi)) = &rc.cast_ray(
                 Vect::new(pos.translation.x, pos.translation.y - 52.0),
                 Vect::new(0.0, 1.0),
-                1.0,
+                1.9,
                 true,
                 QueryFilter::default(),
             ) {
