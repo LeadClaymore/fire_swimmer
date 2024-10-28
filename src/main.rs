@@ -8,6 +8,22 @@ use bevy::window::PrimaryWindow;
 
 const FORCE_STRENGTH: f32 = 99999.9;
 
+/// This is an struct for information on the burn type for a block
+#[derive(Component, Debug, Clone, Copy)]
+pub struct BlockInfo {
+    /// If this can be set on fire
+    pub burnable:       bool,
+    /// When burnt can it be put out
+    pub extinguishable: bool,
+    /// When burnt how long will it last
+    pub burn_time:      f32,
+    /// position of the block
+    pub pos:            Vec2,
+    /// size of the block
+    pub size:           Vec2,
+    //TODO slants, movable, explosive
+}
+
 #[derive(Debug, Clone, Copy)]
 pub enum FlameStrength {
     Weak,
@@ -79,6 +95,13 @@ fn setup_physics(mut commands: Commands) {
             // RigidBody::Dynamic,
             Collider::cuboid(500.0, 50.0),
             TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)),
+            BlockInfo {
+                burnable:       false,
+                extinguishable: false,
+                burn_time:      0.0,
+                pos:            Vec2::new(0.0, -100.0),
+                size:           Vec2::new(500.0, 50.0),
+            },
             //Friction::coefficient(2.0),
         ));
 
@@ -214,9 +237,10 @@ fn character_movement(
 ) {
     //I dont want to waste resources checking if it should move unless one of the keys are being pressed
     if key_presses.any_pressed([KeyCode::KeyW, KeyCode::KeyA, KeyCode::KeyS, KeyCode::KeyD, KeyCode::Space]) {
-        // if it is then change the velocitys
+        // get the pos and vel of the ball
         for (mut velo , pos)in entity_properties.iter_mut() {
-            // this checks if theres an entity below the shpere within 1m
+            // this checks if theres an entity below the shpere within 2m
+            //TODO make a filter for components With<BlockInfo>
             if let Some((_entity, _toi)) = &rc.cast_ray(
                 Vect::new(pos.translation.x, pos.translation.y - 52.0),
                 Vect::new(0.0, 1.0),
@@ -224,7 +248,7 @@ fn character_movement(
                 true,
                 QueryFilter::default(),
             ) {
-                // Either add this to WKey or move to inpulse
+                // TODO Either add this to WKey or move to inpulse
                 if key_presses.pressed(KeyCode::Space) {
                     velo.linvel += Vec2::new(0.0, 2.0);
                 }
@@ -236,17 +260,18 @@ fn character_movement(
             } else {
                 //TODO falling
             }
-            // A Key
+            //TODO for now this allows air strafing and fast falling
+            // moving left
             if key_presses.pressed(KeyCode::KeyA) {
                 velo.linvel += Vec2::new(-2.0, 2.0);
             }
 
-            // S key
+            // fast falling
             if key_presses.pressed(KeyCode::KeyS) {
                 velo.linvel += Vec2::new(0.0, -2.0);
             }
 
-            // D key
+            // moving right
             if key_presses.pressed(KeyCode::KeyD) {
                 velo.linvel += Vec2::new(2.0, 0.0);
             }
