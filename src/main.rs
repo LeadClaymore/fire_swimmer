@@ -117,8 +117,8 @@ fn setup_physics(mut commands: Commands) {
             Damping {linear_damping: 0.1, angular_damping: 0.0},
             //Friction::coefficient(0.0),
             Scorch {
-                max_flame: 10.0,
-                curr_flame: 10.0,
+                max_flame: 100.0,
+                curr_flame: 100.0,
             },
         ));
 }
@@ -143,10 +143,11 @@ fn camera_control(
 // we need to the query of transforms with MainCamera does not contain Scorch 
 // because we cant query the same component one mutable and the other not
 
-// this handles impulse forces on the Scorch
+// this handles impulse forces on Scorch
 fn propell_scorch(
     mut commands: Commands,
-    mut query: Query<(&mut ExternalImpulse, &Transform), With<Scorch>>,
+    mut query: Query<(&mut ExternalImpulse, &Transform, &mut Scorch), With<Scorch>>,
+    // idk if this with scorch is needed (aka if it just gets all the pos and impu otherwise)
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mouse_input: Res<ButtonInput<MouseButton>>,
     mut rng: ResMut<RngResource>,
@@ -157,38 +158,46 @@ fn propell_scorch(
                 position -= Vec2::new(window.width() * 0.5, window.height() * 0.5);
                 //the y coord come out reversed compared to the position of the Scorch
                 position.y = -position.y;
-                for (mut impulse, transform) in query.iter_mut() {
-                    // the camera is locked y wise but x wise its tracking the main character's x 
-                    // so you only need to consiter the difference in y and the x position of the mouse
-                    // if I locked the y to the charater then I would only need to consiter the mouse position
-                    let the_impulse = Vec2::new(-position.x, transform.translation.y - position.y).normalize();
-                    
-                    impulse.impulse = the_impulse * FORCE_STRENGTH;
-                    //impulse.torque_impulse = 1.0;
-                    //println!("cursor: {:?}, Scorch: {:?}, force: {:?}", position, transform.translation, the_impulse);
+                for (
+                    mut impulse, 
+                    transform, 
+                    mut player
+                ) in query.iter_mut() {
+                    if player.curr_flame > 0.0 {
+                        // the camera is locked y wise but x wise its tracking the main character's x 
+                        // so you only need to consiter the difference in y and the x position of the mouse
+                        // if I locked the y to the charater then I would only need to consiter the mouse position
+                        let the_impulse = Vec2::new(-position.x, transform.translation.y - position.y).normalize();
+                        
+                        impulse.impulse = the_impulse * FORCE_STRENGTH;
+                        //impulse.torque_impulse = 1.0;
+                        //println!("cursor: {:?}, Scorch: {:?}, force: {:?}", position, transform.translation, the_impulse);
 
-                    //spawn particle
-                    commands.spawn((
-                        FlameComponent {
-                            state: FlameStrength::Full,
-                        },
-                        RigidBody::Dynamic,
-                        Collider::ball(5.0),
-                        Restitution::coefficient(0.7),
-                        TransformBundle::from(Transform::from_xyz(
-                            transform.translation.x - the_impulse.x * 60.0, 
-                            transform.translation.y - the_impulse.y * 60.0, 
-                            1.0
-                        )),
-                        ExternalImpulse {
-                            impulse: Vec2::new(
-                                -the_impulse.x + rng.rng.gen_range(-0.5..0.5),
-                                -the_impulse.y + rng.rng.gen_range(-0.5..0.5),
-                            ) * FORCE_STRENGTH,
-                            torque_impulse: 0.0,
-                        },
-                    ));
-                    //println!("spawned flame");
+                        //spawn particle
+                        commands.spawn((
+                            FlameComponent {
+                                state: FlameStrength::Full,
+                            },
+                            RigidBody::Dynamic,
+                            Collider::ball(5.0),
+                            Restitution::coefficient(0.7),
+                            TransformBundle::from(Transform::from_xyz(
+                                transform.translation.x - the_impulse.x * 60.0, 
+                                transform.translation.y - the_impulse.y * 60.0, 
+                                1.0
+                            )),
+                            ExternalImpulse {
+                                impulse: Vec2::new(
+                                    -the_impulse.x + rng.rng.gen_range(-0.5..0.5),
+                                    -the_impulse.y + rng.rng.gen_range(-0.5..0.5),
+                                ) * FORCE_STRENGTH,
+                                torque_impulse: 0.0,
+                            },
+                        ));
+                        //println!("spawned flame");
+                        player.curr_flame -= 1.0;
+                        // with this setup its posible to go negative flame, tbh IDC if that happens
+                    }
                 }
             }
         }
