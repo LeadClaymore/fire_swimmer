@@ -7,17 +7,7 @@ use rand::Rng;
 use bevy::window::PrimaryWindow;
 
 // stuff elsewhere in the project
-use crate::FlameComponent;
-use crate::RngResource;
-use crate::FlameStrength;
-
-// stuff in here
-pub struct ScorchPlugin;
-
-#[derive(Bundle)]
-pub struct ScorchBundle {
-    pub camera_info: Scorch,
-}
+use crate::{ember::EmberComponent, RngResource};
 
 impl Plugin for ScorchPlugin {
     fn build(&self, app: &mut App) {
@@ -27,6 +17,14 @@ impl Plugin for ScorchPlugin {
             .add_systems(Update, (propell_scorch, restart_scorch))
             .add_systems(Update, character_movement);
     }
+}
+
+// stuff in here
+pub struct ScorchPlugin;
+
+#[derive(Bundle)]
+pub struct ScorchBundle {
+    pub scorch: Scorch,
 }
 
 #[derive(Component)]
@@ -102,11 +100,9 @@ fn propell_scorch(
                         //impulse.torque_impulse = 1.0;
                         //println!("cursor: {:?}, Scorch: {:?}, force: {:?}", position, transform.translation, the_impulse);
 
-                        //spawn particle
+                        // spawn particle
                         commands.spawn((
-                            FlameComponent {
-                                state: FlameStrength::Full,
-                            },
+                            EmberComponent::full(),
                             RigidBody::Dynamic,
                             Collider::ball(5.0),
                             Restitution::coefficient(0.7),
@@ -123,6 +119,20 @@ fn propell_scorch(
                                 torque_impulse: 0.0,
                             },
                         ));
+
+                        // spawn through EmberComponent
+                        // EmberComponent::spawn_ember(
+                        //     &commands, 
+                        //     (
+                        //             transform.translation.x - the_impulse.x * 60.0,
+                        //             transform.translation.y - the_impulse.y * 60.0
+                        //         ), 
+                        //     Vec2::new(
+                        //             -the_impulse.x + rng.rng.gen_range(-0.5..0.5),
+                        //             -the_impulse.y + rng.rng.gen_range(-0.5..0.5),
+                        //         ) * FORCE_STRENGTH
+                        // );
+
                         //println!("spawned flame");
                         player.curr_flame -= 1.0;
                         // with this setup its posible to go negative flame, tbh IDC if that happens

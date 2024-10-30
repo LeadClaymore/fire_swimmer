@@ -18,23 +18,10 @@ mod scorch;
 use scorch::ScorchPlugin;
 use scorch::Scorch;
 
-//TODO tbh I might change this out for a basic timer idk
-/// a resource for calculating when flames should die down
-#[derive(Resource)]
-pub struct EmberTimer(Timer);
-
-#[derive(Debug, Clone, Copy)]
-pub enum FlameStrength {
-    Weak,
-    Normal,
-    Strong,
-    Full,
-}
-
-#[derive(Component)]
-pub struct FlameComponent {
-    pub state: FlameStrength,
-}
+// ember
+mod ember;
+use ember::EmberPlugin;
+use ember::EmberComponent;
 
 #[derive(Resource)]
 pub struct RngResource {
@@ -44,27 +31,6 @@ pub struct RngResource {
 impl Default for RngResource {
     fn default() -> Self {
         Self { rng: SmallRng::from_entropy(), }
-    }
-}
-
-
-// the embers fade every tick of the ember timer, when they reach the end they despawn
-fn despawn_particles (
-    mut commands: Commands,
-    mut query: Query<(Entity, &mut FlameComponent)>,
-    //key_press: Res<ButtonInput<KeyCode>>,
-    time: Res<Time>,
-    mut ember_timer: ResMut<EmberTimer>,
-) {
-    if ember_timer.0.tick(time.delta()).just_finished() {
-        for (entity, mut flame) in query.iter_mut() {
-            match flame.state {
-                FlameStrength::Full => flame.state = FlameStrength::Strong,
-                FlameStrength::Strong => flame.state = FlameStrength::Normal,
-                FlameStrength::Normal => flame.state = FlameStrength::Weak,
-                FlameStrength::Weak => commands.entity(entity).despawn(),
-            }
-        }
     }
 }
 
@@ -90,7 +56,7 @@ fn collision_event_system (
     mut collision_events: EventReader<CollisionEvent>,
     time: Res<Time>,
     mut binfo_query: Query<(Entity, &mut BlockInfo)>,
-    ember_query: Query<Entity, With<FlameComponent>>,
+    ember_query: Query<Entity, With<EmberComponent>>,
     //mut query: Query<(&mut ActiveCollisionTypes, &mut BlockInfo)>,
 ) {
     for cevent in collision_events.read() {
@@ -137,12 +103,11 @@ fn main() {
         .add_plugins(BlockPlugin)
         .add_plugins(CameraPlugin)
         .add_plugins(ScorchPlugin)
+        .add_plugins(EmberPlugin)
         // resources
         .insert_resource(RngResource::default())
-        .insert_resource(EmberTimer(Timer::from_seconds(1.0, TimerMode::Repeating)))
         // TODO move to a scheduling system
         .add_systems(Update, (block_burning_system, collision_event_system))
-        .add_systems(Update, despawn_particles)
         .run();
 }
 //end
