@@ -15,8 +15,8 @@ pub struct BlockInfo {
     pub burnable:       bool,
     /// When burnt can it be put out
     pub extinguishable: bool,
-    /// When burnt how long will it last
-    pub burn_time:      f32,
+    /// (How long it will burn, when it starts burning (preburn == f64::MAX))
+    pub burn_time:      (f32, f32),
     /// position of the block
     pub pos:            Vec2,
     /// size of the block
@@ -24,6 +24,28 @@ pub struct BlockInfo {
     //TODO slants, movable, explosive
 }
 
+impl BlockInfo {
+    fn default(self) -> BlockInfo {
+        BlockInfo {
+            burnable:       true,
+            extinguishable: true,
+            burn_time:      (10.0, f32::MAX),
+            pos:            Vec2::ZERO,
+            size:           Vec2::new(100.0, 100.0),
+        }
+    }
+    
+    fn new(burn: bool, exti: bool, btime: f32, pos: Vec2, size: Vec2) -> BlockInfo {
+        BlockInfo {
+            burnable:       burn,
+            extinguishable: exti,
+            burn_time:      (btime, f32::MAX),
+            pos:            pos,
+            size:           size,
+        }
+    }
+    
+}
 #[derive(Debug, Clone, Copy)]
 pub enum FlameStrength {
     Weak,
@@ -92,13 +114,13 @@ fn setup_physics(mut commands: Commands) {
             // RigidBody::Dynamic,
             Collider::cuboid(500.0, 50.0),
             TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)),
-            BlockInfo {
-                burnable:       false,
-                extinguishable: false,
-                burn_time:      0.0,
-                pos:            Vec2::new(0.0, -100.0),
-                size:           Vec2::new(500.0, 50.0),
-            },
+            BlockInfo::new(
+                false, 
+                false, 
+                5.0, 
+                Vec2::new(0.0, -100.0), 
+                Vec2::new(500.0, 50.0)
+            ),
             //Friction::coefficient(2.0),
         ));
 
@@ -128,6 +150,10 @@ fn camera_control(
     character_query: Query<&Transform, With<Scorch>>,
     mut camera_query: Query<&mut Transform, (With<MainCamera>, Without<Scorch>)>,
 ) {
+    // learning moment, even though there are no transforms with MainCamera and Scorch, 
+    // when we are querying one to be mutable and the other immutable,
+    // we need to the query of transforms with MainCamera does not contain Scorch 
+    // because we cant query the same component one mutable and the other not
     if let Ok(character_transform) = character_query.get_single() {
         if let Ok(mut camera_transform) = camera_query.get_single_mut() {
             camera_transform.translation.x = character_transform.translation.x;
@@ -138,10 +164,7 @@ fn camera_control(
         //println!("ERROR! character transform unable to parse");
     }
 }
-// learning moment, even though there are no transforms with MainCamera and Scorch, 
-// when we are querying one to be mutable and the other immutable,
-// we need to the query of transforms with MainCamera does not contain Scorch 
-// because we cant query the same component one mutable and the other not
+
 
 // this handles impulse forces on Scorch
 fn propell_scorch(
@@ -294,6 +317,35 @@ fn character_movement(
     }
 }
 
+fn block_burning_system (
+    time: Res<Time>,
+    mut commands: Commands,
+    query: Query<(Entity, &BlockInfo)>
+) {
+    let current_time = time.elapsed_seconds();
+    for (entity, info) in query.iter() {
+        if info.burn_time.1 != f32::MAX {
+            if current_time - info.burn_time.1 > info.burn_time.0 {
+                //TODO for now it just despawns, later it might do more
+                commands.entity(entity).despawn();
+            }
+        }
+    }
+}
+
+fn block_burning_startup (
+    //mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<&mut BlockInfo>,
+) {
+    //TODO for now it just starts burrning rn
+    for mut binfo in query.iter_mut() {
+        if binfo.burn_time.1 == f32::MAX {
+            binfo.burn_time.1 = time.elapsed_seconds();
+        }
+    }
+}
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
@@ -305,6 +357,7 @@ fn main() {
         .add_systems(Update, camera_control)
         // TODO move to a scheduling system
         // movement of the Scorch 
+        .add_systems(Update, (block_burning_system, block_burning_startup))
         .add_systems(Update, (propell_scorch, restart_scorch))
         .add_systems(Update, character_movement)
         .add_systems(Update, despawn_particles)
