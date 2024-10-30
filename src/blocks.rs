@@ -16,6 +16,7 @@ impl Plugin for BlockPlugin {
 
 /// This is an struct for information on the burn type for a block
 #[derive(Component, Debug, Clone, Copy)]
+#[allow(dead_code)]
 pub struct BlockInfo {
     /// If this can be set on fire
     pub burnable:       bool,
