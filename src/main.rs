@@ -8,6 +8,11 @@ use bevy::window::PrimaryWindow;
 
 const FORCE_STRENGTH: f32 = 99999.9;
 
+//TODO tbh I might change this out for a basic timer idk
+/// a resource for calculating when flames should die down
+#[derive(Resource)]
+pub struct EmberTimer(Timer);
+
 /// This is an struct for information on the burn type for a block
 #[derive(Component, Debug, Clone, Copy)]
 pub struct BlockInfo {
@@ -45,7 +50,11 @@ impl BlockInfo {
         }
     }
     
+    fn set_burn(mut self, start_time: f32) {
+        self.burn_time.1 = start_time;
+    }
 }
+
 #[derive(Debug, Clone, Copy)]
 pub enum FlameStrength {
     Weak,
@@ -58,9 +67,6 @@ pub enum FlameStrength {
 pub struct FlameComponent {
     pub state: FlameStrength,
 }
-
-#[derive(Resource)]
-pub struct EmberTimer(Timer);
 
 #[derive(Component)]
 pub struct Scorch {
@@ -328,22 +334,48 @@ fn block_burning_system (
             if current_time - info.burn_time.1 > info.burn_time.0 {
                 //TODO for now it just despawns, later it might do more
                 commands.entity(entity).despawn();
+                println!("Burn timer started for block!");
             }
         }
     }
 }
 
-fn block_burning_startup (
-    //mut commands: Commands,
+fn collision_event_system (
+    mut commands: Commands,
+    mut collision_events: EventReader<CollisionEvent>,
     time: Res<Time>,
-    mut query: Query<&mut BlockInfo>,
+    binfo_query: Query<(Entity, &mut BlockInfo)>,
+    ember_query: Query<Entity, With<FlameComponent>>,
+    //mut query: Query<(&mut ActiveCollisionTypes, &mut BlockInfo)>,
 ) {
-    //TODO for now it just starts burrning rn
-    for mut binfo in query.iter_mut() {
-        if binfo.burn_time.1 == f32::MAX {
-            binfo.burn_time.1 = time.elapsed_seconds();
+    for cevent in collision_events.read() {
+        match cevent {
+            CollisionEvent::Started(ent1, ent2, _) => {
+                // check if 
+                if let Ok((_block_ent, binfo)) = binfo_query.get(*ent1) {
+                    if ember_query.get(*ent2).is_ok() {
+                        binfo.set_burn(time.elapsed_seconds());
+                    }
+                }
+                // same but in reverse
+                if let Ok((_block_ent, binfo)) = binfo_query.get(*ent2) {
+                    if ember_query.get(*ent1).is_ok() {
+                        binfo.set_burn(time.elapsed_seconds());
+                    }
+                }
+            }
+            CollisionEvent::Stopped(_, _, _) => {
+                //currently unused for collisions, but it was in the example
+            }
         }
     }
+
+    //TODO for now it just starts burrning rn
+    // for (colid, mut binfo) in query.iter_mut() {
+    //     if binfo.burn_time.1 == f32::MAX {
+    //         binfo.burn_time.1 = time.elapsed_seconds();
+    //     }
+    // }
 }
 
 fn main() {
@@ -357,7 +389,7 @@ fn main() {
         .add_systems(Update, camera_control)
         // TODO move to a scheduling system
         // movement of the Scorch 
-        .add_systems(Update, (block_burning_system, block_burning_startup))
+        .add_systems(Update, (block_burning_system, collision_event_system))
         .add_systems(Update, (propell_scorch, restart_scorch))
         .add_systems(Update, character_movement)
         .add_systems(Update, despawn_particles)
