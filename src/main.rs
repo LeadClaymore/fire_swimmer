@@ -22,10 +22,11 @@ pub struct BlockInfo {
     pub extinguishable: bool,
     /// (How long it will burn, when it starts burning (preburn == f64::MAX))
     pub burn_time:      (f32, f32),
-    /// position of the block
-    pub pos:            Vec2,
-    /// size of the block
-    pub size:           Vec2,
+    // currently dont use pos and size
+    // /// position of the block
+    // pub pos:            Vec2,
+    // /// size of the block
+    // pub size:           Vec2,
     //TODO slants, movable, explosive
 }
 
@@ -35,18 +36,14 @@ impl BlockInfo {
             burnable:       true,
             extinguishable: true,
             burn_time:      (10.0, f32::MAX),
-            pos:            Vec2::ZERO,
-            size:           Vec2::new(100.0, 100.0),
         }
     }
     
-    fn new(burn: bool, exti: bool, btime: f32, pos: Vec2, size: Vec2) -> BlockInfo {
+    fn new(burn: bool, exti: bool, btime: f32) -> BlockInfo {
         BlockInfo {
             burnable:       burn,
             extinguishable: exti,
             burn_time:      (btime, f32::MAX),
-            pos:            pos,
-            size:           size,
         }
     }
     
@@ -124,8 +121,6 @@ fn setup_physics(mut commands: Commands) {
                 false, 
                 false, 
                 5.0, 
-                Vec2::new(0.0, -100.0), 
-                Vec2::new(500.0, 50.0)
             ),
             //Friction::coefficient(2.0),
         ));
@@ -341,7 +336,7 @@ fn block_burning_system (
 }
 
 fn collision_event_system (
-    mut commands: Commands,
+    //mut commands: Commands,
     mut collision_events: EventReader<CollisionEvent>,
     time: Res<Time>,
     binfo_query: Query<(Entity, &mut BlockInfo)>,
