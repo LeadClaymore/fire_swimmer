@@ -31,6 +31,7 @@ pub struct BlockInfo {
 }
 
 impl BlockInfo {
+    #[allow(dead_code)]
     fn default(self) -> BlockInfo {
         BlockInfo {
             burnable:       true,
@@ -47,7 +48,7 @@ impl BlockInfo {
         }
     }
     
-    fn set_burn(mut self, start_time: f32) {
+    fn set_burn(&mut self, start_time: f32) {
         self.burn_time.1 = start_time;
     }
 }
@@ -118,10 +119,11 @@ fn setup_physics(mut commands: Commands) {
             Collider::cuboid(500.0, 50.0),
             TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)),
             BlockInfo::new(
+                true, 
                 false, 
-                false, 
-                5.0, 
+                0.1, 
             ),
+            ActiveEvents::COLLISION_EVENTS,
             //Friction::coefficient(2.0),
         ));
 
@@ -138,11 +140,12 @@ fn setup_physics(mut commands: Commands) {
             ColliderMassProperties::Density(1.0),
             LockedAxes::ROTATION_LOCKED,
             Damping {linear_damping: 0.1, angular_damping: 0.0},
-            //Friction::coefficient(0.0),
             Scorch {
                 max_flame: 100.0,
                 curr_flame: 100.0,
             },
+            ActiveEvents::COLLISION_EVENTS,
+            //Friction::coefficient(0.0),
         ));
 }
 
@@ -326,10 +329,10 @@ fn block_burning_system (
     let current_time = time.elapsed_seconds();
     for (entity, info) in query.iter() {
         if info.burn_time.1 != f32::MAX {
-            if current_time - info.burn_time.1 > info.burn_time.0 {
+            if current_time - info.burn_time.1 >= info.burn_time.0 {
                 //TODO for now it just despawns, later it might do more
                 commands.entity(entity).despawn();
-                println!("Burn timer started for block!");
+                //println!("Burn timer started for block!");
             }
         }
     }
@@ -339,23 +342,34 @@ fn collision_event_system (
     //mut commands: Commands,
     mut collision_events: EventReader<CollisionEvent>,
     time: Res<Time>,
-    binfo_query: Query<(Entity, &mut BlockInfo)>,
+    mut binfo_query: Query<(Entity, &mut BlockInfo)>,
     ember_query: Query<Entity, With<FlameComponent>>,
     //mut query: Query<(&mut ActiveCollisionTypes, &mut BlockInfo)>,
 ) {
     for cevent in collision_events.read() {
+        //println!("Collision!");
         match cevent {
             CollisionEvent::Started(ent1, ent2, _) => {
                 // check if 
-                if let Ok((_block_ent, binfo)) = binfo_query.get(*ent1) {
+                if let Ok((_block_ent, mut binfo)) = binfo_query.get_mut(*ent1) {
                     if ember_query.get(*ent2).is_ok() {
-                        binfo.set_burn(time.elapsed_seconds());
+                        //println!("ent1 is a block, and ent2 is a ember!");
+                        if binfo.burn_time.1 == f32::MAX {
+                            //println!("burn started! {}, {}, {}", binfo.burn_time.0, binfo.burn_time.1, time.elapsed_seconds());
+                            binfo.set_burn(time.elapsed_seconds());
+                            //println!("burn started! {}, {}, {}", binfo.burn_time.0, binfo.burn_time.1, time.elapsed_seconds());
+                        }
                     }
                 }
                 // same but in reverse
-                if let Ok((_block_ent, binfo)) = binfo_query.get(*ent2) {
+                else if let Ok((_block_ent, mut binfo)) = binfo_query.get_mut(*ent2) {
                     if ember_query.get(*ent1).is_ok() {
-                        binfo.set_burn(time.elapsed_seconds());
+                        //println!("ent2 is a block, and ent1 is a ember!");
+                        if binfo.burn_time.1 == f32::MAX {
+                            //println!("burn started! {}, {}, {}", binfo.burn_time.0, binfo.burn_time.1, time.elapsed_seconds());
+                            binfo.set_burn(time.elapsed_seconds());
+                            //println!("burn started! {}, {}, {}", binfo.burn_time.0, binfo.burn_time.1, time.elapsed_seconds());
+                        }
                     }
                 }
             }
