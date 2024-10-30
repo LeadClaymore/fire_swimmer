@@ -6,6 +6,11 @@ use rand::rngs::SmallRng;
 use bevy::window::PrimaryWindow;
 //use bevy::render::camera::Viewport;
 
+// block related aspects
+mod blocks;
+use blocks::BlockInfo;
+use blocks::BlockPlugin;
+
 const FORCE_STRENGTH: f32 = 99999.9;
 
 //TODO tbh I might change this out for a basic timer idk
@@ -13,45 +18,6 @@ const FORCE_STRENGTH: f32 = 99999.9;
 #[derive(Resource)]
 pub struct EmberTimer(Timer);
 
-/// This is an struct for information on the burn type for a block
-#[derive(Component, Debug, Clone, Copy)]
-pub struct BlockInfo {
-    /// If this can be set on fire
-    pub burnable:       bool,
-    /// When burnt can it be put out
-    pub extinguishable: bool,
-    /// (How long it will burn, when it starts burning (preburn == f64::MAX))
-    pub burn_time:      (f32, f32),
-    // currently dont use pos and size
-    // /// position of the block
-    // pub pos:            Vec2,
-    // /// size of the block
-    // pub size:           Vec2,
-    //TODO slants, movable, explosive
-}
-
-impl BlockInfo {
-    #[allow(dead_code)]
-    fn default(self) -> BlockInfo {
-        BlockInfo {
-            burnable:       true,
-            extinguishable: true,
-            burn_time:      (10.0, f32::MAX),
-        }
-    }
-    
-    fn new(burn: bool, exti: bool, btime: f32) -> BlockInfo {
-        BlockInfo {
-            burnable:       burn,
-            extinguishable: exti,
-            burn_time:      (btime, f32::MAX),
-        }
-    }
-    
-    fn set_burn(&mut self, start_time: f32) {
-        self.burn_time.1 = start_time;
-    }
-}
 
 #[derive(Debug, Clone, Copy)]
 pub enum FlameStrength {
@@ -112,20 +78,7 @@ fn setup_graphics(mut commands: Commands) {
 }
 
 fn setup_physics(mut commands: Commands) {
-    // this is the platform 
-    commands
-        .spawn((
-            // RigidBody::Dynamic,
-            Collider::cuboid(500.0, 50.0),
-            TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)),
-            BlockInfo::new(
-                true, 
-                false, 
-                0.1, 
-            ),
-            ActiveEvents::COLLISION_EVENTS,
-            //Friction::coefficient(2.0),
-        ));
+    
 
     // this is the Scorch
     commands
@@ -389,11 +342,16 @@ fn collision_event_system (
 
 fn main() {
     App::new()
+        // default plugins
         .add_plugins(DefaultPlugins)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
+        // plugins
+        .add_plugins(BlockPlugin)
+        // resources
         .insert_resource(RngResource::default())
         .insert_resource(EmberTimer(Timer::from_seconds(1.0, TimerMode::Repeating)))
+        // graphical and underlying stuff
         .add_systems(Startup, (setup_graphics, setup_physics))
         .add_systems(Update, camera_control)
         // TODO move to a scheduling system
