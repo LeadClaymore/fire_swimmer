@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
+//use bevy_rapier2d::prelude::*;
 
 use serde::Deserialize;
 
@@ -10,9 +10,10 @@ pub struct BlockBundle {
     pub block_info: BlockInfo,
 }
 
+#[allow(dead_code)]
 impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_blocks);
+        //app.add_systems(Startup, setup_blocks);
     }
 }
 
@@ -44,6 +45,7 @@ impl BlockInfo {
         }
     }
     
+    #[allow(dead_code)]
     pub fn new(burn: bool, exti: bool, btime: f32) -> BlockInfo {
         BlockInfo {
             burnable:       burn,
@@ -55,23 +57,4 @@ impl BlockInfo {
     pub fn set_burn(&mut self, start_time: f32) {
         self.burn_time.1 = start_time;
     }
-}
-
-fn setup_blocks(
-    mut commands: Commands,
-) {
-    // this is the platform 
-    // commands
-    //     .spawn((
-    //         // RigidBody::Dynamic,
-    //         Collider::cuboid(500.0, 50.0),
-    //         TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)),
-    //         BlockInfo::new(
-    //             true, 
-    //             false, 
-    //             0.1, 
-    //         ),
-    //         ActiveEvents::COLLISION_EVENTS,
-    //         //Friction::coefficient(2.0),
-    //     ));
 }
