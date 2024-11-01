@@ -1,10 +1,29 @@
 [
     {
+        "pos": [0.0, -100.0],
+        "size": [500.0, 50.0],
+        "block_info": {
+            "burnable": false,
+            "extinguishable": false,
+            "burn_time": [0.1, 0.0]
+        }
+    },
+    {
         "pos": [1000.0, -100.0],
-        "size": [500.0, 50.0]
+        "size": [500.0, 50.0],
+        "block_info": {
+            "burnable": false,
+            "extinguishable": false,
+            "burn_time": [0.1, 0.0]
+        }
     },
     {
         "pos": [2000.0, -100.0],
-        "size": [500.0, 50.0]
+        "size": [500.0, 50.0],
+        "block_info": {
+            "burnable": false,
+            "extinguishable": false,
+            "burn_time": [0.1, 0.0]
+        }
     }
 ]

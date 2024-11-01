@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
+use serde::Deserialize;
+
 pub struct BlockPlugin;
 
 #[derive(Bundle)]
@@ -15,7 +17,7 @@ impl Plugin for BlockPlugin {
 }
 
 /// This is an struct for information on the burn type for a block
-#[derive(Component, Debug, Clone, Copy)]
+#[derive(Component, Debug, Clone, Copy, Deserialize)]
 #[allow(dead_code)]
 pub struct BlockInfo {
     /// If this can be set on fire
@@ -38,7 +40,7 @@ impl BlockInfo {
         BlockInfo {
             burnable:       true,
             extinguishable: true,
-            burn_time:      (10.0, f32::MAX),
+            burn_time:      (10.0, 0.0),
         }
     }
     
@@ -46,7 +48,7 @@ impl BlockInfo {
         BlockInfo {
             burnable:       burn,
             extinguishable: exti,
-            burn_time:      (btime, f32::MAX),
+            burn_time:      (btime, 0.0),
         }
     }
     
@@ -59,17 +61,17 @@ fn setup_blocks(
     mut commands: Commands,
 ) {
     // this is the platform 
-    commands
-        .spawn((
-            // RigidBody::Dynamic,
-            Collider::cuboid(500.0, 50.0),
-            TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)),
-            BlockInfo::new(
-                true, 
-                false, 
-                0.1, 
-            ),
-            ActiveEvents::COLLISION_EVENTS,
-            //Friction::coefficient(2.0),
-        ));
+    // commands
+    //     .spawn((
+    //         // RigidBody::Dynamic,
+    //         Collider::cuboid(500.0, 50.0),
+    //         TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)),
+    //         BlockInfo::new(
+    //             true, 
+    //             false, 
+    //             0.1, 
+    //         ),
+    //         ActiveEvents::COLLISION_EVENTS,
+    //         //Friction::coefficient(2.0),
+    //     ));
 }

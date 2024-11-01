@@ -26,7 +26,7 @@ impl Plugin for SdPlugin {
 struct BlockData {
     pos: [f32; 2],
     size: [f32; 2],
-    //blockInfo: 
+    block_info: BlockInfo,
 }
 
 fn spawn_blocks_from_json(
@@ -45,11 +45,7 @@ fn spawn_blocks_from_json(
                 // RigidBody::Dynamic,
                 Collider::cuboid(block.size[0], block.size[1]),
                 TransformBundle::from(Transform::from_xyz(block.pos[0], block.pos[1], 0.0)),
-                BlockInfo::new(
-                    true, 
-                    false, 
-                    0.1, 
-                ),
+                block.block_info,
                 ActiveEvents::COLLISION_EVENTS,
                 //Friction::coefficient(2.0),
             ));

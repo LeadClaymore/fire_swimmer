@@ -28,7 +28,7 @@ fn block_burning_system (
 ) {
     let current_time = time.elapsed_seconds();
     for (entity, info) in query.iter() {
-        if info.burn_time.1 != f32::MAX {
+        if info.burn_time.1 != 0.0 {
             if current_time - info.burn_time.1 >= info.burn_time.0 {
                 //TODO for now it just despawns, later it might do more
                 commands.entity(entity).despawn();
@@ -54,7 +54,7 @@ fn collision_event_system (
                 if let Ok((_block_ent, mut binfo)) = binfo_query.get_mut(*ent1) {
                     if ember_query.get(*ent2).is_ok() {
                         //println!("ent1 is a block, and ent2 is a ember!");
-                        if binfo.burn_time.1 == f32::MAX {
+                        if binfo.burn_time.1 == 0.0 {
                             //println!("burn started! {}, {}, {}", binfo.burn_time.0, binfo.burn_time.1, time.elapsed_seconds());
                             binfo.set_burn(time.elapsed_seconds());
                             //println!("burn started! {}, {}, {}", binfo.burn_time.0, binfo.burn_time.1, time.elapsed_seconds());
@@ -65,7 +65,7 @@ fn collision_event_system (
                 else if let Ok((_block_ent, mut binfo)) = binfo_query.get_mut(*ent2) {
                     if ember_query.get(*ent1).is_ok() {
                         //println!("ent2 is a block, and ent1 is a ember!");
-                        if binfo.burn_time.1 == f32::MAX {
+                        if binfo.burn_time.1 == 0.0 {
                             //println!("burn started! {}, {}, {}", binfo.burn_time.0, binfo.burn_time.1, time.elapsed_seconds());
                             binfo.set_burn(time.elapsed_seconds());
                             //println!("burn started! {}, {}, {}", binfo.burn_time.0, binfo.burn_time.1, time.elapsed_seconds());

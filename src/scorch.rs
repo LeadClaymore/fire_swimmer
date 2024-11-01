@@ -147,8 +147,8 @@ fn propell_scorch(
                             transform.translation.y
                         );
                         let end = Vect::new(
-                            transform.translation.x - the_impulse.x * 100.0, 
-                            transform.translation.y - the_impulse.y * 100.0
+                            transform.translation.x - the_impulse.x * 1000.0, 
+                            transform.translation.y - the_impulse.y * 1000.0
                         );
 
                         // Create a mesh with two vertices
