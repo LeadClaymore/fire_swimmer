@@ -7,7 +7,7 @@ use rand::Rng;
 use bevy::window::PrimaryWindow;
 
 // stuff elsewhere in the project
-use crate::{ember::EmberComponent, RngResource};
+use crate::{ember::EmberComponent, rng::RngResource};
 
 impl Plugin for ScorchPlugin {
     fn build(&self, app: &mut App) {
