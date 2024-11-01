@@ -21,6 +21,9 @@ use coll::CollPlugin;
 // rand
 mod rng;
 use rng::RngPlugin;
+// sdtogame
+mod sd_to_game;
+use sd_to_game::SdPlugin;
 
 fn main() {
     App::new()
@@ -35,6 +38,7 @@ fn main() {
         .add_plugins(EmberPlugin)
         .add_plugins(CollPlugin)
         .add_plugins(RngPlugin)
+        .add_plugins(SdPlugin)
         // TODO move to a scheduling system
         .run();
 }
