@@ -120,22 +120,44 @@ fn propell_scorch(
                             },
                         ));
 
-                        // spawn through EmberComponent
-                        // EmberComponent::spawn_ember(
-                        //     &commands, 
-                        //     (
-                        //             transform.translation.x - the_impulse.x * 60.0,
-                        //             transform.translation.y - the_impulse.y * 60.0
-                        //         ), 
-                        //     Vec2::new(
-                        //             -the_impulse.x + rng.rng.gen_range(-0.5..0.5),
-                        //             -the_impulse.y + rng.rng.gen_range(-0.5..0.5),
-                        //         ) * FORCE_STRENGTH
-                        // );
+                        /*
+                            spawn through EmberComponent
+                            EmberComponent::spawn_ember(
+                                &commands, 
+                                (
+                                        transform.translation.x - the_impulse.x * 60.0,
+                                        transform.translation.y - the_impulse.y * 60.0
+                                    ), 
+                                Vec2::new(
+                                        -the_impulse.x + rng.rng.gen_range(-0.5..0.5),
+                                        -the_impulse.y + rng.rng.gen_range(-0.5..0.5),
+                                    ) * FORCE_STRENGTH
+                            );
+                        */
 
-                        //println!("spawned flame");
-                        player.curr_flame -= 1.0;
+                        // for using up the flame the charater has
                         // with this setup its posible to go negative flame, tbh IDC if that happens
+                        player.curr_flame -= 0.0;
+
+                        //drawing debug line
+                        // Define the start and end points of the line
+
+                        let start = Vect::new(
+                            transform.translation.x, 
+                            transform.translation.y
+                        );
+                        let end = Vect::new(
+                            transform.translation.x - the_impulse.x * 100.0, 
+                            transform.translation.y - the_impulse.y * 100.0
+                        );
+
+                        // Create a mesh with two vertices
+                        commands
+                            .spawn((
+                            RigidBody::Fixed,
+                            Collider::segment(start, end),
+                            Sensor,
+                        ));
                     }
                 }
             }

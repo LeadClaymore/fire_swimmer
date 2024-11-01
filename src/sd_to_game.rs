@@ -17,7 +17,7 @@ pub struct SdPlugin;
 impl Plugin for SdPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(Startup, spawn_blocks_from_json);
+            .add_systems(Startup, spawn_blocks_from_json)
         ;
     }
 }

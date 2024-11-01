@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
+//use bevy_rapier2d::prelude::*;
 // external stuff
 use rand::SeedableRng;
 use rand::rngs::SmallRng;
