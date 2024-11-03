@@ -1,6 +1,7 @@
 // default includes
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use bevy::dev_tools::fps_overlay::FpsOverlayPlugin;
 
 // block related aspects
 mod blocks;
@@ -27,11 +28,13 @@ use sd_to_game::SdPlugin;
 
 fn main() {
     App::new()
-        // default plugins
+        // built in plugins
         .add_plugins(DefaultPlugins)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
-        // plugins
+        .add_plugins(FpsOverlayPlugin::default())
+    
+        // home made plugins
         .add_plugins(BlockPlugin)
         .add_plugins(CameraPlugin)
         .add_plugins(ScorchPlugin)
