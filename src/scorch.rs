@@ -40,7 +40,7 @@ pub struct Scorch {
 
     // pub flame_force: f32,
 
-    // pub double_jump: bool,
+    pub double_jump: bool,
     // pub unlocked_dj: bool,
 
     /// if dash is available and when last pressed
@@ -62,6 +62,7 @@ impl Scorch {
     pub fn grounded(&mut self) {
         self.a_dash.0 = true;
         self.d_dash.0 = true;
+        self.double_jump = true;
     }
 
     /// if the A was pressed within the last .2 sec and dash is available, then set dash to false and return true.
@@ -72,10 +73,9 @@ impl Scorch {
         if self.a_dash.0 && curr_time - self.a_dash.1 > 0.2 {
             self.a_dash.0 = false;
             return true;
-        } else {
-            self.a_dash.1 = curr_time;
-            return false;
         }
+        self.a_dash.1 = curr_time;
+        return false;
     }
 
     /// if the D was pressed within the last .2 sec and dash is available, then set dash to false and return true.
@@ -84,10 +84,19 @@ impl Scorch {
         if self.d_dash.0 && curr_time - self.d_dash.1 > 0.2 {
             self.d_dash.0 = false;
             return true;
-        } else {
-            self.d_dash.1 = curr_time;
-            return false;
         }
+        self.d_dash.1 = curr_time;
+        return false;
+    }
+
+    /// if the double jump is available then return true and set it to false
+    /// otherwise return false;
+    pub fn double_jump_avail(&mut self) -> bool {
+        if self.double_jump {
+            self.double_jump = false;
+            return true;
+        }
+        return false;
     }
 }
 const FORCE_STRENGTH: f32 = 99999.9;
@@ -110,6 +119,7 @@ fn setup_physics(mut commands: Commands) {
             Scorch {
                 max_flame: 100.0,
                 curr_flame: 100.0,
+                double_jump: false,
                 a_dash: (false, 0.0),
                 d_dash: (false, 0.0),
             },
@@ -286,10 +296,6 @@ fn character_movement(
                 // jump impulse
                 if key_presses.just_pressed(KeyCode::Space) {
                     imp.impulse += Vec2::new(0.0, 30.0 * FORCE_STRENGTH);
-                    //TODO add double jump
-                    // I think that there could be a resource or component to the character,
-                    // Then when grounded, this is activated (true) and if used before landing you can jump
-                    // When landed it refreshes if (false) but all good because it can only be used when falling
                 }
                 
                 // moveing up. use this when added swimming
@@ -297,9 +303,15 @@ fn character_movement(
                 //     velo.linvel += Vec2::new(0.0, 2.0);
                 // }
 
-                //TODO add dashing left and right
             } else {
-                //TODO falling
+                //falling
+
+                // doublejump if possible
+                if key_presses.just_pressed(KeyCode::Space) && scorch.double_jump_avail() {
+                    println!("double jump!");
+                    imp.impulse += Vec2::new(0.0, 30.0 * FORCE_STRENGTH);
+                }
+                //TODO look up if having the checks and times for dashing and double jumping would be better as a resource
             }
             //TODO for now this allows air strafing and fast falling
             // moving left
@@ -311,7 +323,7 @@ fn character_movement(
             }
 
             if key_presses.just_pressed(KeyCode::KeyD) && scorch.d_dash_avail(time.elapsed_seconds()){
-                //println!("a dash!");
+                //println!("d dash!");
                 imp.impulse += Vec2::new(50.0 * FORCE_STRENGTH, 0.0 );
             } else if key_presses.pressed(KeyCode::KeyD) {
                 velo.linvel += Vec2::new(2.0, 0.0);
