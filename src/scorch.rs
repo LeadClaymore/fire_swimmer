@@ -1,4 +1,4 @@
-use bevy::{ecs::{entity, query::{self, QueryData}}, prelude::*};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use rand::Rng;
@@ -38,20 +38,41 @@ pub struct Scorch {
     /// current life for scorch
     pub curr_flame: f32,
 
-    // pub FlameForce: f32,
+    // pub flame_force: f32,
 
-    // pub DoubleJump: bool,
-    // pub UnlockedDJ: bool,
+    // pub double_jump: bool,
+    // pub unlocked_dj: bool,
 
-    // pub Dash: bool,
-    // pub UnlockedDash: bool,
-    // pub UnlockedAirDash: bool,
+    /// if dash is available and when last pressed
+    pub a_dash: (bool, f32),
+    
+    /// if dash is available and when last pressed
+    pub d_dash: (bool, f32),
+    // pub unlocked_dash: bool,
+    // pub unlocked_air_dash: bool,
 }
 
 impl Scorch {
     pub fn regen_flame(&mut self) {
         if self.max_flame > self.curr_flame {
             self.curr_flame += 0.1;
+        }
+    }
+
+    pub fn grounded(&mut self) {
+        self.a_dash.0 = true;
+        self.d_dash.0 = true;
+    }
+
+    pub fn a_dash_avail(&mut self, curr_time: f32) -> bool {
+        // TODO currently a_dash.1 starts as 0, so insta dash
+        // fix by checking for == 0.0
+        if self.a_dash.0 && curr_time - self.a_dash.1 > 0.2 {
+            self.a_dash.0 = false;
+            return true;
+        } else {
+            self.a_dash.1 = curr_time;
+            return false;
         }
     }
 }
@@ -75,6 +96,8 @@ fn setup_physics(mut commands: Commands) {
             Scorch {
                 max_flame: 100.0,
                 curr_flame: 100.0,
+                a_dash: (false, 0.0),
+                d_dash: (false, 0.0),
             },
             ActiveEvents::COLLISION_EVENTS,
             //Friction::coefficient(0.0),
@@ -229,13 +252,14 @@ fn restart_scorch(
 
 fn character_movement(
     rc: Res<RapierContext>,
-    mut entity_properties: Query<(&mut ExternalImpulse, &mut Velocity, &mut Transform), With<Scorch>>,
+    mut entity_properties: Query<(&mut ExternalImpulse, &mut Velocity, &mut Transform, &mut Scorch)>,
     key_presses: Res<ButtonInput<KeyCode>>,
+    time: Res<Time>,
 ) {
     //I dont want to waste resources checking if it should move unless one of the keys are being pressed
     if key_presses.any_pressed([KeyCode::KeyW, KeyCode::KeyA, KeyCode::KeyS, KeyCode::KeyD, KeyCode::Space]) {
         // get the pos and vel of the Scorch
-        for (mut imp, mut velo , pos)in entity_properties.iter_mut() {
+        for (mut imp, mut velo , pos, mut scorch)in entity_properties.iter_mut() {
             // this checks if theres an entity below the shpere within 2m
             if let Some((_entity, _toi)) = &rc.cast_ray(
                 Vect::new(pos.translation.x, pos.translation.y - 52.0),
@@ -244,6 +268,7 @@ fn character_movement(
                 true,
                 QueryFilter::default(),
             ) {
+                scorch.grounded();
                 // jump impulse
                 if key_presses.just_pressed(KeyCode::Space) {
                     imp.impulse += Vec2::new(0.0, 30.0 * FORCE_STRENGTH);
@@ -264,7 +289,10 @@ fn character_movement(
             }
             //TODO for now this allows air strafing and fast falling
             // moving left
-            if key_presses.pressed(KeyCode::KeyA) {
+            if key_presses.just_pressed(KeyCode::KeyA) && scorch.a_dash_avail(time.elapsed_seconds()){
+                println!("a dash!");
+                imp.impulse += Vec2::new(-50.0 * FORCE_STRENGTH, 0.0 );
+            } else if key_presses.pressed(KeyCode::KeyA) {
                 velo.linvel += Vec2::new(-2.0, 0.0);
             }
 
