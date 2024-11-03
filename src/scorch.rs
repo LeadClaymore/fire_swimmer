@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{ecs::{entity, query::{self, QueryData}}, prelude::*};
 use bevy_rapier2d::prelude::*;
 
 use rand::Rng;
@@ -14,8 +14,11 @@ impl Plugin for ScorchPlugin {
         // graphical and underlying stuff
         app
             .add_systems(Startup, setup_physics)
-            .add_systems(Update, (propell_scorch, restart_scorch))
-            .add_systems(Update, character_movement);
+            .add_systems(Update, propell_scorch)
+            .add_systems(Update, character_movement)
+            .add_systems(PostUpdate, restart_scorch)
+            .add_systems(PostUpdate, regen_flame)
+        ;
     }
 }
 
@@ -34,7 +37,7 @@ pub struct Scorch {
     pub max_flame: f32,
     /// current life for scorch
     pub curr_flame: f32,
-    
+
     // pub FlameForce: f32,
 
     // pub DoubleJump: bool,
@@ -45,6 +48,13 @@ pub struct Scorch {
     // pub UnlockedAirDash: bool,
 }
 
+impl Scorch {
+    pub fn regen_flame(&mut self) {
+        if self.max_flame > self.curr_flame {
+            self.curr_flame += 0.1;
+        }
+    }
+}
 const FORCE_STRENGTH: f32 = 99999.9;
 const EXTINGUISH_DIST: f32 = 100.0;
 
@@ -63,8 +73,8 @@ fn setup_physics(mut commands: Commands) {
             LockedAxes::ROTATION_LOCKED,
             Damping {linear_damping: 0.1, angular_damping: 0.0},
             Scorch {
-                max_flame: 1000.0,
-                curr_flame: 1000.0,
+                max_flame: 100.0,
+                curr_flame: 100.0,
             },
             ActiveEvents::COLLISION_EVENTS,
             //Friction::coefficient(0.0),
@@ -268,6 +278,14 @@ fn character_movement(
                 velo.linvel += Vec2::new(2.0, 0.0);
             }
         }
+    }
+}
+
+fn regen_flame (
+    mut query: Query<&mut Scorch>,
+) {
+    for mut scorch in query.iter_mut() {
+        scorch.regen_flame();
     }
 }
 // end
