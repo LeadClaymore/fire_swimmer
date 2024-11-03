@@ -14,29 +14,11 @@ pub struct CollPlugin;
 impl Plugin for CollPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(Update, block_burning_system)
             .add_systems(Update, collision_event_system)
         ;
     }
 }
 
-
-fn block_burning_system (
-    time: Res<Time>,
-    mut commands: Commands,
-    query: Query<(Entity, &BlockInfo)>
-) {
-    let current_time = time.elapsed_seconds();
-    for (entity, info) in query.iter() {
-        if info.burn_time.1 != 0.0 {
-            if current_time - info.burn_time.1 >= info.burn_time.0 {
-                //TODO for now it just despawns, later it might do more
-                commands.entity(entity).despawn();
-                //println!("Burn timer started for block!");
-            }
-        }
-    }
-}
 
 fn collision_event_system (
     //mut commands: Commands,

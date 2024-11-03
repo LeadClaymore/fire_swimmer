@@ -13,8 +13,8 @@
         "size": [500.0, 50.0],
         "block_info": {
             "burnable": true,
-            "extinguishable": false,
-            "burn_time": [0.1, 0.0]
+            "extinguishable": true,
+            "burn_time": [10.0, 0.0]
         }
     },
     {

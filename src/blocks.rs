@@ -13,7 +13,9 @@ pub struct BlockBundle {
 #[allow(dead_code)]
 impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
-        //app.add_systems(Startup, setup_blocks);
+        app
+            .add_systems(Update, block_burning_system)
+        ;
     }
 }
 
@@ -56,5 +58,22 @@ impl BlockInfo {
     
     pub fn set_burn(&mut self, start_time: f32) {
         self.burn_time.1 = start_time;
+    }
+}
+
+fn block_burning_system (
+    time: Res<Time>,
+    mut commands: Commands,
+    query: Query<(Entity, &BlockInfo)>
+) {
+    let current_time = time.elapsed_seconds();
+    for (entity, info) in query.iter() {
+        if info.burn_time.1 != 0.0 {
+            if current_time - info.burn_time.1 >= info.burn_time.0 {
+                //TODO for now it just despawns, later it might do more
+                commands.entity(entity).despawn();
+                //println!("Burn timer started for block!");
+            }
+        }
     }
 }

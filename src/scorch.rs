@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{ecs::observer::TriggerTargets, prelude::*};
 use bevy_rapier2d::prelude::*;
 
 use rand::Rng;
@@ -7,7 +7,7 @@ use rand::Rng;
 use bevy::window::PrimaryWindow;
 
 // stuff elsewhere in the project
-use crate::{ember::EmberComponent, rng::RngResource};
+use crate::{blocks::BlockInfo, ember::EmberComponent, rng::RngResource};
 
 impl Plugin for ScorchPlugin {
     fn build(&self, app: &mut App) {
@@ -46,6 +46,7 @@ pub struct Scorch {
 }
 
 const FORCE_STRENGTH: f32 = 99999.9;
+const EXTINGUISH_DIST: f32 = 100.0;
 
 fn setup_physics(mut commands: Commands) {
     // this is the Scorch
@@ -78,8 +79,17 @@ fn propell_scorch(
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mouse_input: Res<ButtonInput<MouseButton>>,
     mut rng: ResMut<RngResource>,
+    rc: Res<RapierContext>,
+
+    // query for blocks with block info for extinguish
+    mut bi_query: Query<&mut BlockInfo>,
 ) {
-    if mouse_input.pressed(MouseButton::Left) {
+    // these imputs are used elsewhere so im storing this now
+    let (left_click, right_click) = (
+        mouse_input.pressed(MouseButton::Left), 
+        mouse_input.pressed(MouseButton::Right)
+    );
+    if left_click || right_click {
         if let Ok(window) = q_windows.get_single() {
             if let Some(mut position) = window.cursor_position() {
                 position -= Vec2::new(window.width() * 0.5, window.height() * 0.5);
@@ -90,15 +100,18 @@ fn propell_scorch(
                     transform, 
                     mut player
                 ) in query.iter_mut() {
-                    if player.curr_flame > 0.0 {
-                        // the camera is locked y wise but x wise its tracking the main character's x 
-                        // so you only need to consiter the difference in y and the x position of the mouse
-                        // if I locked the y to the charater then I would only need to consiter the mouse position
-                        let the_impulse = Vec2::new(-position.x, transform.translation.y - position.y).normalize();
-                        
-                        impulse.impulse = the_impulse * FORCE_STRENGTH;
-                        //impulse.torque_impulse = 1.0;
-                        //println!("cursor: {:?}, Scorch: {:?}, force: {:?}", position, transform.translation, the_impulse);
+                    // the camera is locked y wise but x wise its tracking the main character's x 
+                    // so you only need to consiter the difference in y and the x position of the mouse
+                    // if I locked the y to the charater then I would only need to consiter the mouse position
+                    let imp_dir = Vec2::new(
+                        -position.x, 
+                        transform.translation.y - position.y
+                    ).normalize();
+
+                    // if left click, and has fuel then propell scorch
+                    if player.curr_flame > 0.0 && left_click {
+                        // apply force
+                        impulse.impulse = imp_dir * FORCE_STRENGTH;
 
                         // spawn particle
                         commands.spawn((
@@ -107,58 +120,82 @@ fn propell_scorch(
                             Collider::ball(5.0),
                             Restitution::coefficient(0.7),
                             TransformBundle::from(Transform::from_xyz(
-                                transform.translation.x - the_impulse.x * 60.0, 
-                                transform.translation.y - the_impulse.y * 60.0, 
+                                transform.translation.x - imp_dir.x * 60.0, 
+                                transform.translation.y - imp_dir.y * 60.0, 
                                 1.0
                             )),
                             ExternalImpulse {
                                 impulse: Vec2::new(
-                                    -the_impulse.x + rng.rng.gen_range(-0.5..0.5),
-                                    -the_impulse.y + rng.rng.gen_range(-0.5..0.5),
+                                    -imp_dir.x + rng.rng.gen_range(-0.5..0.5),
+                                    -imp_dir.y + rng.rng.gen_range(-0.5..0.5),
                                 ) * FORCE_STRENGTH,
                                 torque_impulse: 0.0,
                             },
                         ));
+
+                        // for using up the flame the charater has
+                        // with this setup its posible to go negative flame, tbh IDC if that happens
+                        player.curr_flame -= 1.0;
 
                         /*
                             spawn through EmberComponent
                             EmberComponent::spawn_ember(
                                 &commands, 
                                 (
-                                        transform.translation.x - the_impulse.x * 60.0,
-                                        transform.translation.y - the_impulse.y * 60.0
+                                        transform.translation.x - imp_dir.x * 60.0,
+                                        transform.translation.y - imp_dir.y * 60.0
                                     ), 
                                 Vec2::new(
-                                        -the_impulse.x + rng.rng.gen_range(-0.5..0.5),
-                                        -the_impulse.y + rng.rng.gen_range(-0.5..0.5),
+                                        -imp_dir.x + rng.rng.gen_range(-0.5..0.5),
+                                        -imp_dir.y + rng.rng.gen_range(-0.5..0.5),
                                     ) * FORCE_STRENGTH
                             );
                         */
-
-                        // for using up the flame the charater has
-                        // with this setup its posible to go negative flame, tbh IDC if that happens
-                        player.curr_flame -= 0.0;
-
-                        //drawing debug line
-                        // Define the start and end points of the line
-
-                        let start = Vect::new(
-                            transform.translation.x, 
-                            transform.translation.y
-                        );
-                        let end = Vect::new(
-                            transform.translation.x - the_impulse.x * 1000.0, 
-                            transform.translation.y - the_impulse.y * 1000.0
-                        );
-
-                        // Create a mesh with two vertices
-                        commands
-                            .spawn((
-                            RigidBody::Fixed,
-                            Collider::segment(start, end),
-                            Sensor,
-                        ));
+                    } else if right_click {
+                        if let Some((ext_entity, _toi)) = &rc.cast_ray(
+                        Vect::new(
+                            transform.translation.x + imp_dir.x * 60.0, 
+                            transform.translation.y + imp_dir.y * 60.0
+                        ),
+                        Vect::new(imp_dir.x, imp_dir.y),
+                        EXTINGUISH_DIST,
+                        true,
+                        QueryFilter::default(),
+                        ) {
+                            // if let check for the block having block info
+                            if let Ok(mut ex_block) = bi_query.get_mut(*ext_entity) {
+                                if ex_block.extinguishable && ex_block.burn_time.1 != 0.0 {
+                                    println!("extinguish block!");
+                                    ex_block.burn_time.1 = 0.0;
+                                } else if ex_block.extinguishable {
+                                    println!("block not on fire!");
+                                } else {
+                                    println!("not valid target!");
+                                }
+                            } else {
+                                println!("not a block!");
+                            }
+                        }
                     }
+
+                    //drawing debug line
+                    // Define the start and end points of the line
+                    let start = Vect::new(
+                        transform.translation.x, 
+                        transform.translation.y
+                    );
+                    let end = Vect::new(
+                        transform.translation.x - imp_dir.x * 1000.0, 
+                        transform.translation.y - imp_dir.y * 1000.0
+                    );
+
+                    // Create a mesh with two vertices
+                    commands
+                        .spawn((
+                        RigidBody::Fixed,
+                        Collider::segment(start, end),
+                        Sensor,
+                    ));
                 }
             }
         }
@@ -179,7 +216,6 @@ fn restart_scorch(
     }
 }
 
-//TODO I dont need mut for transform rn, but IDK how to to iter_mut with 1 mut and another not
 fn character_movement(
     rc: Res<RapierContext>,
     mut entity_properties: Query<(&mut ExternalImpulse, &mut Velocity, &mut Transform), With<Scorch>>,
@@ -190,7 +226,6 @@ fn character_movement(
         // get the pos and vel of the Scorch
         for (mut imp, mut velo , pos)in entity_properties.iter_mut() {
             // this checks if theres an entity below the shpere within 2m
-            //TODO make a filter for components With<BlockInfo>
             if let Some((_entity, _toi)) = &rc.cast_ray(
                 Vect::new(pos.translation.x, pos.translation.y - 52.0),
                 Vect::new(0.0, 1.0),
@@ -234,3 +269,4 @@ fn character_movement(
         }
     }
 }
+// end
