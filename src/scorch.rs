@@ -64,6 +64,8 @@ impl Scorch {
         self.d_dash.0 = true;
     }
 
+    /// if the A was pressed within the last .2 sec and dash is available, then set dash to false and return true.
+    /// otherwise record curr time in a_dash.1
     pub fn a_dash_avail(&mut self, curr_time: f32) -> bool {
         // TODO currently a_dash.1 starts as 0, so insta dash
         // fix by checking for == 0.0
@@ -72,6 +74,18 @@ impl Scorch {
             return true;
         } else {
             self.a_dash.1 = curr_time;
+            return false;
+        }
+    }
+
+    /// if the D was pressed within the last .2 sec and dash is available, then set dash to false and return true.
+    /// otherwise record curr time in d_dash.1
+    pub fn d_dash_avail(&mut self, curr_time: f32) -> bool {
+        if self.d_dash.0 && curr_time - self.d_dash.1 > 0.2 {
+            self.d_dash.0 = false;
+            return true;
+        } else {
+            self.d_dash.1 = curr_time;
             return false;
         }
     }
@@ -290,20 +304,22 @@ fn character_movement(
             //TODO for now this allows air strafing and fast falling
             // moving left
             if key_presses.just_pressed(KeyCode::KeyA) && scorch.a_dash_avail(time.elapsed_seconds()){
-                println!("a dash!");
+                //println!("a dash!");
                 imp.impulse += Vec2::new(-50.0 * FORCE_STRENGTH, 0.0 );
             } else if key_presses.pressed(KeyCode::KeyA) {
                 velo.linvel += Vec2::new(-2.0, 0.0);
             }
 
+            if key_presses.just_pressed(KeyCode::KeyD) && scorch.d_dash_avail(time.elapsed_seconds()){
+                //println!("a dash!");
+                imp.impulse += Vec2::new(50.0 * FORCE_STRENGTH, 0.0 );
+            } else if key_presses.pressed(KeyCode::KeyD) {
+                velo.linvel += Vec2::new(2.0, 0.0);
+            }
+
             // fast falling
             if key_presses.pressed(KeyCode::KeyS) {
                 velo.linvel += Vec2::new(0.0, -2.0);
-            }
-
-            // moving right
-            if key_presses.pressed(KeyCode::KeyD) {
-                velo.linvel += Vec2::new(2.0, 0.0);
             }
         }
     }
