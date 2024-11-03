@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
+use crate::coll::DebugComp;
+
 #[derive(Bundle)]
 pub struct EmberBundle {
     //pub ember_str: EmberStrength,
@@ -79,6 +81,9 @@ fn despawn_particles (
     //key_press: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
     mut ember_timer: ResMut<EmberTimer>,
+
+    //TODO debug stuff move elsewher
+    debug_query: Query<Entity, With<DebugComp>>,
 ) {
     if ember_timer.0.tick(time.delta()).just_finished() {
         for (entity, mut flame) in query.iter_mut() {
@@ -88,6 +93,11 @@ fn despawn_particles (
                 EmberStrength::Normal => flame.state = EmberStrength::Weak,
                 EmberStrength::Weak => commands.entity(entity).despawn(),
             }
+        }
+
+        // debug stuff move later
+        for entity in debug_query.iter() {
+            commands.entity(entity).despawn();
         }
     }
 }

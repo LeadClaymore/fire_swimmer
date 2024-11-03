@@ -6,7 +6,7 @@ use crate::{ember::EmberComponent, blocks::BlockInfo};
 
 #[derive(Bundle)]
 pub struct CollBundle {
-    // unused
+    debug_component: DebugComp,
 }
 
 pub struct CollPlugin;
@@ -19,6 +19,8 @@ impl Plugin for CollPlugin {
     }
 }
 
+#[derive(Component)]
+pub struct DebugComp;
 
 fn collision_event_system (
     //mut commands: Commands,

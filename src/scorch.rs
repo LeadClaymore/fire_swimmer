@@ -1,4 +1,4 @@
-use bevy::{ecs::observer::TriggerTargets, prelude::*};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use rand::Rng;
@@ -7,7 +7,7 @@ use rand::Rng;
 use bevy::window::PrimaryWindow;
 
 // stuff elsewhere in the project
-use crate::{blocks::BlockInfo, ember::EmberComponent, rng::RngResource};
+use crate::{blocks::BlockInfo, coll::DebugComp, ember::EmberComponent, rng::RngResource};
 
 impl Plugin for ScorchPlugin {
     fn build(&self, app: &mut App) {
@@ -63,8 +63,8 @@ fn setup_physics(mut commands: Commands) {
             LockedAxes::ROTATION_LOCKED,
             Damping {linear_damping: 0.1, angular_damping: 0.0},
             Scorch {
-                max_flame: 100.0,
-                curr_flame: 100.0,
+                max_flame: 1000.0,
+                curr_flame: 1000.0,
             },
             ActiveEvents::COLLISION_EVENTS,
             //Friction::coefficient(0.0),
@@ -165,15 +165,15 @@ fn propell_scorch(
                             // if let check for the block having block info
                             if let Ok(mut ex_block) = bi_query.get_mut(*ext_entity) {
                                 if ex_block.extinguishable && ex_block.burn_time.1 != 0.0 {
-                                    println!("extinguish block!");
+                                    //println!("extinguish block!");
                                     ex_block.burn_time.1 = 0.0;
                                 } else if ex_block.extinguishable {
-                                    println!("block not on fire!");
+                                    //println!("block not on fire!");
                                 } else {
-                                    println!("not valid target!");
+                                    //println!("not valid target!");
                                 }
                             } else {
-                                println!("not a block!");
+                                //println!("not a block!");
                             }
                         }
                     }
@@ -193,6 +193,7 @@ fn propell_scorch(
                     commands
                         .spawn((
                         RigidBody::Fixed,
+                        DebugComp,
                         Collider::segment(start, end),
                         Sensor,
                     ));
