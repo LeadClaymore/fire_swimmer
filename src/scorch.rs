@@ -317,14 +317,16 @@ fn character_movement(
             // moving left
             if key_presses.just_pressed(KeyCode::KeyA) && scorch.a_dash_avail(time.elapsed_seconds()){
                 //println!("a dash!");
-                imp.impulse += Vec2::new(-50.0 * FORCE_STRENGTH, 0.0 );
+                imp.impulse += Vec2::new(-50.0 * FORCE_STRENGTH, 10.0 * FORCE_STRENGTH );
+                velo.linvel.y = 0.0;
             } else if key_presses.pressed(KeyCode::KeyA) {
                 velo.linvel += Vec2::new(-2.0, 0.0);
             }
 
             if key_presses.just_pressed(KeyCode::KeyD) && scorch.d_dash_avail(time.elapsed_seconds()){
                 //println!("d dash!");
-                imp.impulse += Vec2::new(50.0 * FORCE_STRENGTH, 0.0 );
+                imp.impulse += Vec2::new(50.0 * FORCE_STRENGTH, 10.0 * FORCE_STRENGTH );
+                velo.linvel.y = 0.0;
             } else if key_presses.pressed(KeyCode::KeyD) {
                 velo.linvel += Vec2::new(2.0, 0.0);
             }
