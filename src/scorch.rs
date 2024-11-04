@@ -43,11 +43,13 @@ pub struct Scorch {
     pub double_jump: bool,
     // pub unlocked_dj: bool,
 
+    pub dash: bool,
+
     /// if dash is available and when last pressed
-    pub a_dash: (bool, f32),
+    pub a_dash: f32,
     
     /// if dash is available and when last pressed
-    pub d_dash: (bool, f32),
+    pub d_dash: f32,
     // pub unlocked_dash: bool,
     // pub unlocked_air_dash: bool,
 }
@@ -60,8 +62,7 @@ impl Scorch {
     }
 
     pub fn grounded(&mut self) {
-        self.a_dash.0 = true;
-        self.d_dash.0 = true;
+        self.dash = true;
         self.double_jump = true;
     }
 
@@ -70,22 +71,22 @@ impl Scorch {
     pub fn a_dash_avail(&mut self, curr_time: f32) -> bool {
         // TODO currently a_dash.1 starts as 0, so insta dash
         // fix by checking for == 0.0
-        if self.a_dash.0 && curr_time - self.a_dash.1 > 0.2 {
-            self.a_dash.0 = false;
+        if self.dash && curr_time - self.a_dash > 0.2 {
+            self.dash = false;
             return true;
         }
-        self.a_dash.1 = curr_time;
+        self.a_dash = curr_time;
         return false;
     }
 
     /// if the D was pressed within the last .2 sec and dash is available, then set dash to false and return true.
     /// otherwise record curr time in d_dash.1
     pub fn d_dash_avail(&mut self, curr_time: f32) -> bool {
-        if self.d_dash.0 && curr_time - self.d_dash.1 > 0.2 {
-            self.d_dash.0 = false;
+        if self.dash && curr_time - self.d_dash > 0.2 {
+            self.dash = false;
             return true;
         }
-        self.d_dash.1 = curr_time;
+        self.d_dash = curr_time;
         return false;
     }
 
@@ -120,8 +121,9 @@ fn setup_physics(mut commands: Commands) {
                 max_flame: 100.0,
                 curr_flame: 100.0,
                 double_jump: false,
-                a_dash: (false, 0.0),
-                d_dash: (false, 0.0),
+                dash: false,
+                a_dash: 0.0,
+                d_dash: 0.0,
             },
             ActiveEvents::COLLISION_EVENTS,
             //Friction::coefficient(0.0),
