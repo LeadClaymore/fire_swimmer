@@ -64,7 +64,7 @@ pub struct Scorch {
     
     /// if dash is available and when last pressed
     pub d_dash: f32,
-    
+
     // pub unlocked_dash: bool,
     // pub unlocked_air_dash: bool,
 }
