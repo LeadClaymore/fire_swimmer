@@ -138,7 +138,10 @@ fn setup_physics(mut commands: Commands) {
             GravityScale(0.5),
             ColliderMassProperties::Density(1.0),
             LockedAxes::ROTATION_LOCKED,
-            Damping {linear_damping: 0.1, angular_damping: 0.0},
+            Damping {
+                linear_damping: 0.1, 
+                angular_damping: 0.0
+            },
             Scorch {
                 max_flame: 100.0,
                 curr_flame: 100.0,
@@ -155,21 +158,17 @@ fn setup_physics(mut commands: Commands) {
 // this handles impulse forces on Scorch
 fn propell_scorch(
     mut commands: Commands,
-    //TODO idk if this with scorch is needed (aka if it just gets all the pos and impu otherwise)
-    mut query: Query<(&mut ExternalImpulse, &Transform, &mut Scorch), With<Scorch>>,
-
-    //window and camera stuff
+    // transform of scorch
+    mut query: Query<(&mut ExternalImpulse, &Transform, &mut Scorch)>,
+    // window and camera stuff
     q_window: Query<&Window, With<PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform)>,
-    
-    //input
+    // input
     mouse_input: Res<ButtonInput<MouseButton>>,
-
-    //rng for spawning embers
+    // rng for spawning embers
     mut rng: ResMut<RngResource>,
     // for raycasting for exstinguishing
     rc: Res<RapierContext>,
-
     // query for blocks with block info for extinguish
     mut bi_query: Query<&mut BlockInfo>,
 ) {
@@ -180,6 +179,7 @@ fn propell_scorch(
     );
     if left_click || right_click {
         // I found this example in the bevy cookbook
+        // https://bevy-cheatbook.github.io/cookbook/cursor2world.html
         // this gets the camera and the transform and window
         let (camera, camera_transform) = q_camera.single();
         let window = q_window.single();
