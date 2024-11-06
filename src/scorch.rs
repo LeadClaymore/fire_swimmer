@@ -87,7 +87,7 @@ impl Scorch {
         // TODO currently a_dash.1 starts as 0, so insta dash
         // fix by checking for == 0.0
         if self.dash.0 && 
-            curr_time - self.a_dash > DOUBLE_TAP_COOLDOWN && 
+            curr_time - self.a_dash < DOUBLE_TAP_COOLDOWN && 
             curr_time - self.dash.1 > DASH_COOLDOWN
         {
             self.dash.0 = false;
@@ -103,7 +103,7 @@ impl Scorch {
     pub fn d_dash_avail(&mut self, curr_time: f32) -> bool {
         if 
             self.dash.0 && 
-            curr_time - self.d_dash > DOUBLE_TAP_COOLDOWN &&
+            curr_time - self.d_dash < DOUBLE_TAP_COOLDOWN &&
             curr_time - self.dash.1 > DASH_COOLDOWN 
         {
             self.dash.0 = false;
@@ -356,16 +356,14 @@ fn character_movement(
             //TODO for now this allows air strafing and fast falling
             // moving left
             if key_presses.just_pressed(KeyCode::KeyA) && scorch.a_dash_avail(time.elapsed_seconds()){
-                //println!("a dash!");
-                imp.impulse += Vec2::new(-50.0 * FORCE_STRENGTH, 10.0 * FORCE_STRENGTH );
+                imp.impulse += Vec2::new(-50.0 * FORCE_STRENGTH, 5.0 * FORCE_STRENGTH );
                 velo.linvel.y = 0.0;
             } else if key_presses.pressed(KeyCode::KeyA) {
                 velo.linvel += Vec2::new(-2.0, 0.0);
             }
 
             if key_presses.just_pressed(KeyCode::KeyD) && scorch.d_dash_avail(time.elapsed_seconds()){
-                //println!("d dash!");
-                imp.impulse += Vec2::new(50.0 * FORCE_STRENGTH, 10.0 * FORCE_STRENGTH );
+                imp.impulse += Vec2::new(50.0 * FORCE_STRENGTH, 5.0 * FORCE_STRENGTH );
                 velo.linvel.y = 0.0;
             } else if key_presses.pressed(KeyCode::KeyD) {
                 velo.linvel += Vec2::new(2.0, 0.0);

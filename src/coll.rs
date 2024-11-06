@@ -33,6 +33,7 @@ fn collision_event_system (
     mut scorch_query: Query<(Entity, &mut Scorch)>,
     //mut query: Query<(&mut ActiveCollisionTypes, &mut BlockInfo)>,
 ) {
+    //TODO need to read up on collision handling, also change how it is
     for cevent in collision_events.read() {
         match cevent {
             CollisionEvent::Started(ent1, ent2, _) => {
