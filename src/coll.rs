@@ -1,4 +1,4 @@
-use bevy::{ecs::observer::TriggerTargets, prelude::*};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 // elsewhere in the project
@@ -26,13 +26,10 @@ impl Plugin for CollPlugin {
 pub struct DebugComp;
 
 fn collision_event_system (
-    mut commands: Commands,
     mut collision_events: EventReader<CollisionEvent>,
     time: Res<Time>,
     mut binfo_query: Query<(Entity, &mut BlockInfo)>,
     ember_query: Query<Entity, With<EmberComponent>>,
-    mut scorch_query: Query<(Entity, &mut Scorch)>,
-    //mut query: Query<(&mut ActiveCollisionTypes, &mut BlockInfo)>,
 ) {
     //TODO need to read up on collision handling, also change how it is
     for cevent in collision_events.read() {
@@ -54,20 +51,6 @@ fn collision_event_system (
                         }
                     }
                 }
-                // // if one is scorch and another is ember, then remove the ember and gain some flame
-                // else if let Ok((_scor_ent, mut scor_data)) = scorch_query.get_mut(*ent1) {
-                //     if ember_query.get(*ent2).is_ok() {
-                //         commands.entity(*ent2).despawn();
-                //         scor_data.regen_flame();
-                //     }
-                // }
-                // // if one is scorch and another is ember, then remove the ember and gain some flame
-                // else if let Ok((_scor_ent, mut scor_data)) = scorch_query.get_mut(*ent2) {
-                //     if ember_query.get(*ent1).is_ok() {
-                //         commands.entity(*ent1).despawn();
-                //         scor_data.regen_flame();
-                //     }
-                // }
             }
             CollisionEvent::Stopped(_, _, _) => {
                 //currently unused for collisions, but it was in the example
@@ -79,19 +62,29 @@ fn collision_event_system (
 fn scorch_collision (
     mut commands: Commands,
     rc: Res<RapierContext>,
+    time: Res<Time>,
+
+    // querys for the possible collisions
     mut scor_query: Query<(Entity, &mut Scorch)>,
     emb_query: Query<(), With<EmberComponent>>,
+    mut block_query: Query<&mut BlockInfo>,
 ) {
     let (s_entity, mut s_compo) = scor_query.single_mut();
     for co_pair in rc.contact_pairs_with(s_entity) {
+        // get collisions with scorch
         let coll_entity = if co_pair.collider1() == s_entity {
+            // the other colider is either 1 or 2 so we check which one
             co_pair.collider2()
         } else {
             co_pair.collider1()
         };
+
+        // effects on the other entity depending on what it is
         if emb_query.get(coll_entity).is_ok() {
             commands.entity(coll_entity).despawn();
             s_compo.regen_flame();
+        } else if let Ok(mut b_info) = block_query.get_mut(coll_entity) {
+            b_info.set_burn(time.elapsed_seconds());
         }
     }
 }

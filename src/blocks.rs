@@ -57,7 +57,9 @@ impl BlockInfo {
     }
     
     pub fn set_burn(&mut self, start_time: f32) {
-        self.burn_time.1 = start_time;
+        if self.burnable {
+            self.burn_time.1 = start_time;
+        }
     }
 }
 
