@@ -1,9 +1,9 @@
-use bevy::prelude::*;
+use bevy::{ecs::observer::TriggerTargets, prelude::*};
 use bevy_rapier2d::prelude::*;
 
 // elsewhere in the project
 use crate::{
-    blocks::BlockInfo, ember::EmberComponent, scorch::{self, Scorch}
+    blocks::BlockInfo, ember::EmberComponent, scorch::Scorch
 };
 
 #[derive(Bundle)]
@@ -17,6 +17,7 @@ impl Plugin for CollPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(Update, collision_event_system)
+            .add_systems(Update, scorch_collision)
         ;
     }
 }
@@ -53,24 +54,44 @@ fn collision_event_system (
                         }
                     }
                 }
-                // if one is scorch and another is ember, then remove the ember and gain some flame
-                else if let Ok((_scor_ent, mut scor_data)) = scorch_query.get_mut(*ent1) {
-                    if ember_query.get(*ent2).is_ok() {
-                        commands.entity(*ent2).despawn();
-                        scor_data.regen_flame();
-                    }
-                }
-                // if one is scorch and another is ember, then remove the ember and gain some flame
-                else if let Ok((_scor_ent, mut scor_data)) = scorch_query.get_mut(*ent2) {
-                    if ember_query.get(*ent1).is_ok() {
-                        commands.entity(*ent1).despawn();
-                        scor_data.regen_flame();
-                    }
-                }
+                // // if one is scorch and another is ember, then remove the ember and gain some flame
+                // else if let Ok((_scor_ent, mut scor_data)) = scorch_query.get_mut(*ent1) {
+                //     if ember_query.get(*ent2).is_ok() {
+                //         commands.entity(*ent2).despawn();
+                //         scor_data.regen_flame();
+                //     }
+                // }
+                // // if one is scorch and another is ember, then remove the ember and gain some flame
+                // else if let Ok((_scor_ent, mut scor_data)) = scorch_query.get_mut(*ent2) {
+                //     if ember_query.get(*ent1).is_ok() {
+                //         commands.entity(*ent1).despawn();
+                //         scor_data.regen_flame();
+                //     }
+                // }
             }
             CollisionEvent::Stopped(_, _, _) => {
                 //currently unused for collisions, but it was in the example
             }
+        }
+    }
+}
+
+fn scorch_collision (
+    mut commands: Commands,
+    rc: Res<RapierContext>,
+    mut scor_query: Query<(Entity, &mut Scorch)>,
+    emb_query: Query<(), With<EmberComponent>>,
+) {
+    let (s_entity, mut s_compo) = scor_query.single_mut();
+    for co_pair in rc.contact_pairs_with(s_entity) {
+        let coll_entity = if co_pair.collider1() == s_entity {
+            co_pair.collider2()
+        } else {
+            co_pair.collider1()
+        };
+        if emb_query.get(coll_entity).is_ok() {
+            commands.entity(coll_entity).despawn();
+            s_compo.regen_flame();
         }
     }
 }
