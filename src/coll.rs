@@ -59,6 +59,7 @@ fn collision_event_system (
     }
 }
 
+// collisions with scorch
 fn scorch_collision (
     mut commands: Commands,
     rc: Res<RapierContext>,
@@ -80,9 +81,11 @@ fn scorch_collision (
         };
 
         // effects on the other entity depending on what it is
+        // when an ember
         if emb_query.get(coll_entity).is_ok() {
             commands.entity(coll_entity).despawn();
             s_compo.regen_flame();
+        // when a block
         } else if let Ok(mut b_info) = block_query.get_mut(coll_entity) {
             b_info.set_burn(time.elapsed_seconds());
         }

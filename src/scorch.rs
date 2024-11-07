@@ -7,7 +7,13 @@ use rand::Rng;
 use bevy::window::PrimaryWindow;
 
 // stuff elsewhere in the project
-use crate::{blocks::BlockInfo, coll::DebugComp, ember::EmberComponent, rng::RngResource};
+use crate::{
+    blocks::BlockInfo, 
+    coll::DebugComp, 
+    ember::EmberComponent, 
+    ember,
+    rng::RngResource
+};
 
 impl Plugin for ScorchPlugin {
     fn build(&self, app: &mut App) {
@@ -131,8 +137,8 @@ fn setup_physics(mut commands: Commands) {
         .spawn((
             RigidBody::Dynamic,
             Collider::ball(50.0),
-            Restitution::coefficient(0.7),
-            TransformBundle::from(Transform::from_xyz(0.0, 400.0, 0.0)),
+            Restitution::coefficient(0.1),
+            TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)),
             ExternalImpulse::default(),
             Velocity::default(),
             GravityScale(0.5),
@@ -212,43 +218,21 @@ fn propell_scorch(
                     impulse.impulse = imp_dir * FORCE_STRENGTH;
 
                     // spawn particle
-                    commands.spawn((
-                        EmberComponent::full(),
-                        RigidBody::Dynamic,
-                        Collider::ball(5.0),
-                        Restitution::coefficient(0.7),
-                        TransformBundle::from(Transform::from_xyz(
+                    ember::spawn_ember(
+                        &mut commands, 
+                        (
                             transform.translation.x - imp_dir.x * 60.0, 
-                            transform.translation.y - imp_dir.y * 60.0, 
-                            1.0
-                        )),
-                        ExternalImpulse {
-                            impulse: Vec2::new(
-                                -imp_dir.x + rng.rng.gen_range(-0.5..0.5),
-                                -imp_dir.y + rng.rng.gen_range(-0.5..0.5),
-                            ) * FORCE_STRENGTH,
-                            torque_impulse: 0.0,
-                        },
-                    ));
+                            transform.translation.y - imp_dir.y * 60.0
+                        ),
+                        Vec2::new(
+                            -imp_dir.x + rng.rng.gen_range(-0.5..0.5),
+                            -imp_dir.y + rng.rng.gen_range(-0.5..0.5),
+                        ) * FORCE_STRENGTH
+                    );
 
                     // for using up the flame the charater has
                     // with this setup its posible to go negative flame, tbh IDC if that happens
                     player.curr_flame -= 1.0;
-
-                    /*
-                        spawn through EmberComponent
-                        EmberComponent::spawn_ember(
-                            &commands, 
-                            (
-                                    transform.translation.x - imp_dir.x * 60.0,
-                                    transform.translation.y - imp_dir.y * 60.0
-                                ), 
-                            Vec2::new(
-                                    -imp_dir.x + rng.rng.gen_range(-0.5..0.5),
-                                    -imp_dir.y + rng.rng.gen_range(-0.5..0.5),
-                                ) * FORCE_STRENGTH
-                        );
-                    */
                 } else if right_click {
                     if let Some((ext_entity, _toi)) = &rc.cast_ray(
                     Vect::new(

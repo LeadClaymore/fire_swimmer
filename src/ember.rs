@@ -47,31 +47,6 @@ impl EmberComponent {
             state: EmberStrength::Full,
         }
     }
-
-    pub fn spawn_ember(
-        commands: &mut Commands,
-        pos: (f32, f32), 
-        imp: Vec2
-    ) {
-        // spawn particle
-        commands.spawn((
-            EmberComponent {
-                state: EmberStrength::Full,
-            },
-            RigidBody::Dynamic,
-            Collider::ball(5.0),
-            Restitution::coefficient(0.7),
-            TransformBundle::from(Transform::from_xyz(
-                pos.0, 
-                pos.1, 
-                1.0
-            )),
-            ExternalImpulse {
-                impulse: imp,
-                torque_impulse: 0.0,
-            },
-        ));
-    }
 }
 
 // the embers fade every tick of the ember timer, when they reach the end they despawn
@@ -100,4 +75,27 @@ fn despawn_particles (
             commands.entity(entity).despawn();
         }
     }
+}
+
+pub fn spawn_ember(
+    commands: &mut Commands,
+    pos: (f32, f32), 
+    imp: Vec2
+) {
+    // spawn particle
+    commands.spawn((
+        EmberComponent::full(),
+        RigidBody::Dynamic,
+        Collider::ball(5.0),
+        Restitution::coefficient(0.7),
+        TransformBundle::from(Transform::from_xyz(
+            pos.0, 
+            pos.1, 
+            1.0
+        )),
+        ExternalImpulse {
+            impulse: imp,
+            torque_impulse: 0.0,
+        },
+    ));
 }
