@@ -42,10 +42,10 @@ fn main() {
         .add_plugins(CameraPlugin)
         .add_plugins(ScorchPlugin)
         .add_plugins(EmberPlugin)
-        .add_plugins(EnemyPlugin)
         .add_plugins(CollPlugin)
         .add_plugins(RngPlugin)
         .add_plugins(SdPlugin)
+        .add_plugins(EnemyPlugin)
         // TODO move to a scheduling system
         .run();
 }
