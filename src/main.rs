@@ -25,6 +25,9 @@ use rng::RngPlugin;
 // sdtogame
 mod sd_to_game;
 use sd_to_game::SdPlugin;
+// enemies
+mod enemies;
+use enemies::EnemyPlugin;
 
 fn main() {
     App::new()
@@ -39,6 +42,7 @@ fn main() {
         .add_plugins(CameraPlugin)
         .add_plugins(ScorchPlugin)
         .add_plugins(EmberPlugin)
+        .add_plugins(EnemyPlugin)
         .add_plugins(CollPlugin)
         .add_plugins(RngPlugin)
         .add_plugins(SdPlugin)
