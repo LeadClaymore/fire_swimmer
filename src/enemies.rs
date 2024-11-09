@@ -19,13 +19,13 @@ impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(Update, enemy_movement_system)
-            .add_systems(Startup, setup_test_enemy)
+            //.add_systems(Startup, setup_test_enemy)
         ;
     }
 }
 
 /// Information on enemies
-#[derive(Component, Debug, Clone, Copy)]
+#[derive(Component, Debug, Clone, Copy, Deserialize)]
 #[allow(dead_code)]
 pub struct EnemyInfo {
     pub health: f32,
@@ -54,27 +54,22 @@ fn enemy_movement_system(
     }
 }
 
-fn setup_test_enemy(mut commands: Commands) {
+pub fn spawn_enemy(
+    commands: &mut Commands,
+    e_pos: Vec2,
+    e_info: EnemyInfo,
+) {
     commands
         .spawn((
             RigidBody::Dynamic,
             Collider::ball(25.0),
             Restitution::coefficient(0.5),
-            TransformBundle::from(Transform::from_xyz(2000.0, 100.0, 0.0)),
+            TransformBundle::from(Transform::from_xyz(e_pos.x, e_pos.y, 0.0)),
             ExternalImpulse::default(),
-            //Velocity::default(),
             GravityScale(0.0),
             ColliderMassProperties::Density(1.0),
             LockedAxes::ROTATION_LOCKED,
-            // Damping {
-            //     linear_damping: 0.1, 
-            //     angular_damping: 0.0
-            // },
-            EnemyInfo {
-                health: 100.0,
-                speed: 10.0,
-            },
             ActiveEvents::COLLISION_EVENTS,
-            //Friction::coefficient(0.0),
+            e_info,
         ));
 }

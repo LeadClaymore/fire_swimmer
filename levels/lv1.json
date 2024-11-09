@@ -1,83 +1,95 @@
-[
-    {
-        "pos": [0.0, -100.0],
-        "size": [500.0, 50.0],
-        "block_info": {
-            "burnable": false,
-            "extinguishable": false,
-            "burn_time": [0.1, 0.0]
+{
+    "blocks": [
+        {
+            "pos": [0.0, -100.0],
+            "size": [500.0, 50.0],
+            "block_info": {
+                "burnable": false,
+                "extinguishable": false,
+                "burn_time": [0.1, 0.0]
+            }
+        },
+        {
+            "pos": [1000.0, -100.0],
+            "size": [500.0, 50.0],
+            "block_info": {
+                "burnable": false,
+                "extinguishable": false,
+                "burn_time": [10.0, 0.0]
+            }
+        },
+        {
+            "pos": [2000.0, -100.0],
+            "size": [500.0, 50.0],
+            "block_info": {
+                "burnable": false,
+                "extinguishable": false,
+                "burn_time": [0.1, 0.0]
+            }
+        },
+        {
+            "pos": [0.0, 400.0],
+            "size": [500.0, 50.0],
+            "block_info": {
+                "burnable": false,
+                "extinguishable": false,
+                "burn_time": [0.1, 0.0]
+            }
+        },
+        {
+            "pos": [1000.0, 400.0],
+            "size": [500.0, 50.0],
+            "block_info": {
+                "burnable": false,
+                "extinguishable": false,
+                "burn_time": [10.0, 0.0]
+            }
+        },
+        {
+            "pos": [2000.0, 400.0],
+            "size": [500.0, 50.0],
+            "block_info": {
+                "burnable": false,
+                "extinguishable": false,
+                "burn_time": [0.1, 0.0]
+            }
+        },
+        {
+            "pos": [-550.0, 150.0],
+            "size": [50.0, 300.0],
+            "block_info": {
+                "burnable": false,
+                "extinguishable": false,
+                "burn_time": [0.1, 0.0]
+            }
+        },
+        {
+            "pos": [1000.0, 150.0],
+            "size": [50.0, 200.0],
+            "block_info": {
+                "burnable": true,
+                "extinguishable": true,
+                "burn_time": [0.1, 0.0]
+            }
+        },
+        {
+            "pos": [2550.0, 150.0],
+            "size": [50.0, 300.0],
+            "block_info": {
+                "burnable": false,
+                "extinguishable": false,
+                "burn_time": [0.1, 0.0]
+            }
         }
-    },
-    {
-        "pos": [1000.0, -100.0],
-        "size": [500.0, 50.0],
-        "block_info": {
-            "burnable": false,
-            "extinguishable": false,
-            "burn_time": [10.0, 0.0]
+    ],
+    "enemies": [
+        {
+            "pos": [2000.0, 100.0],
+            "size": 25.0,
+            "e_info": {
+                "health": 100.0,
+                "speed": 10.0
+            }
         }
-    },
-    {
-        "pos": [2000.0, -100.0],
-        "size": [500.0, 50.0],
-        "block_info": {
-            "burnable": false,
-            "extinguishable": false,
-            "burn_time": [0.1, 0.0]
-        }
-    },
-    {
-        "pos": [0.0, 400.0],
-        "size": [500.0, 50.0],
-        "block_info": {
-            "burnable": false,
-            "extinguishable": false,
-            "burn_time": [0.1, 0.0]
-        }
-    },
-    {
-        "pos": [1000.0, 400.0],
-        "size": [500.0, 50.0],
-        "block_info": {
-            "burnable": false,
-            "extinguishable": false,
-            "burn_time": [10.0, 0.0]
-        }
-    },
-    {
-        "pos": [2000.0, 400.0],
-        "size": [500.0, 50.0],
-        "block_info": {
-            "burnable": false,
-            "extinguishable": false,
-            "burn_time": [0.1, 0.0]
-        }
-    },
-    {
-        "pos": [-550.0, 150.0],
-        "size": [50.0, 300.0],
-        "block_info": {
-            "burnable": false,
-            "extinguishable": false,
-            "burn_time": [0.1, 0.0]
-        }
-    },
-    {
-        "pos": [1000.0, 150.0],
-        "size": [50.0, 200.0],
-        "block_info": {
-            "burnable": true,
-            "extinguishable": true,
-            "burn_time": [0.1, 0.0]
-        }
-    },
-    {
-        "pos": [2550.0, 150.0],
-        "size": [50.0, 300.0],
-        "block_info": {
-            "burnable": false,
-            "extinguishable": false,
-            "burn_time": [0.1, 0.0]
-        }
-    }
-]
+    ]
+}
