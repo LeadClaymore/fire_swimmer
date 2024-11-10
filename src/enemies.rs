@@ -24,13 +24,28 @@ impl Plugin for EnemyPlugin {
     }
 }
 
+pub trait EnemyType {
+    fn contact_dmg(&self) -> f32;
+    fn speed(&self) -> f32;
+}
+
 /// Information on enemies
 #[derive(Component, Debug, Clone, Copy, Deserialize)]
 #[allow(dead_code)]
 pub struct EnemyInfo {
     pub health: f32,
-    pub speed: f32,
+    pub move_speed: f32,
     pub dmg: f32,
+}
+
+impl EnemyType for EnemyInfo {
+    fn contact_dmg(&self) -> f32 {
+        self.dmg
+    }
+
+    fn speed(&self) -> f32 {
+        self.move_speed
+    }
 }
 
 // impl EnemyInfo {
@@ -50,7 +65,7 @@ fn enemy_movement_system(
         for (mut e_imp, e_trans, e_info) in enemy_query.iter_mut() {
             // move towards scorch
             e_imp.impulse += (scorch_pos - e_trans.translation.truncate()).normalize()
-                    * ENEMY_FORCE_STRENGTH * e_info.speed;
+                    * ENEMY_FORCE_STRENGTH * e_info.speed();
         }
     }
 }
