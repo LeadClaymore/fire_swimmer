@@ -82,6 +82,15 @@ impl Scorch {
         }
     }
 
+    ///Take damage based on the send number
+    pub fn damage_flame(&mut self, dmg: f32) {
+        if dmg < self.curr_flame {
+            self.curr_flame -= dmg;
+        } else {
+            self.curr_flame = 0.0;
+        }
+    }
+
     pub fn grounded(&mut self) {
         self.dash.0 = true;
         self.double_jump = true;

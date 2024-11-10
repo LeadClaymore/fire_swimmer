@@ -30,6 +30,7 @@ impl Plugin for EnemyPlugin {
 pub struct EnemyInfo {
     pub health: f32,
     pub speed: f32,
+    pub dmg: f32,
 }
 
 // impl EnemyInfo {

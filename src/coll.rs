@@ -3,7 +3,10 @@ use bevy_rapier2d::prelude::*;
 
 // elsewhere in the project
 use crate::{
-    blocks::BlockInfo, ember::EmberComponent, scorch::Scorch
+    blocks::BlockInfo, 
+    ember::EmberComponent, 
+    scorch::Scorch,
+    enemies::EnemyInfo,
 };
 
 #[derive(Bundle)]
@@ -69,6 +72,7 @@ fn scorch_collision (
     mut scor_query: Query<(Entity, &mut Scorch)>,
     emb_query: Query<(), With<EmberComponent>>,
     mut block_query: Query<&mut BlockInfo>,
+    mut enemy_query: Query<&mut EnemyInfo>,
 ) {
     let (s_entity, mut s_compo) = scor_query.single_mut();
     for co_pair in rc.contact_pairs_with(s_entity) {
@@ -88,6 +92,9 @@ fn scorch_collision (
         // when a block
         } else if let Ok(mut b_info) = block_query.get_mut(coll_entity) {
             b_info.set_burn(time.elapsed_seconds());
+        } else if let Ok(e_info) = enemy_query.get_mut(coll_entity) {
+            s_compo.damage_flame(e_info.dmg);
+            println!("Health: {}", s_compo.curr_flame);
         }
     }
 }
