@@ -84,6 +84,7 @@
     ],
     "enemies": [
         {
+            "e_type": "RunDown",
             "pos": [2000.0, 100.0],
             "size": 25.0,
             "e_info": {

@@ -24,33 +24,33 @@ impl Plugin for EnemyPlugin {
     }
 }
 
-pub trait EnemyType {
-    fn contact_dmg(&self) -> f32;
-    fn speed(&self) -> f32;
-}
-
 /// Information on enemies
 #[derive(Component, Debug, Clone, Copy, Deserialize)]
 #[allow(dead_code)]
 pub struct EnemyInfo {
+    pub e_type: EnemyType,
     pub health: f32,
     pub move_speed: f32,
     pub dmg: f32,
 }
 
-impl EnemyType for EnemyInfo {
-    fn contact_dmg(&self) -> f32 {
+impl EnemyInfo {
+    pub fn contact_dmg(&self) -> f32 {
         self.dmg
     }
 
-    fn speed(&self) -> f32 {
+    pub fn speed(&self) -> f32 {
         self.move_speed
     }
 }
 
-// impl EnemyInfo {
-//     //pub fn move(&mut self, )
-// }
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq)]
+#[allow(dead_code)]
+pub enum EnemyType {
+    run_down,
+    ranged,
+    summoner,
+}
 
 // TIL: crashed when used mutable transform remember this
 fn enemy_movement_system(
@@ -63,9 +63,11 @@ fn enemy_movement_system(
         .and_then(|scor_tran| Ok(scor_tran.translation.truncate())) 
     {
         for (mut e_imp, e_trans, e_info) in enemy_query.iter_mut() {
-            // move towards scorch
+            if e_info.e_type == EnemyType::run_down {
+                // move towards scorch
             e_imp.impulse += (scorch_pos - e_trans.translation.truncate()).normalize()
-                    * ENEMY_FORCE_STRENGTH * e_info.speed();
+            * ENEMY_FORCE_STRENGTH * e_info.speed();
+            }
         }
     }
 }
