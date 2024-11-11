@@ -62,7 +62,7 @@ fn collision_event_system (
     }
 }
 
-// collisions with scorch
+/// collisions with scorch
 fn scorch_collision (
     mut commands: Commands,
     rc: Res<RapierContext>,
@@ -85,16 +85,18 @@ fn scorch_collision (
         };
 
         // effects on the other entity depending on what it is
-        // when an ember
+        // when an ember absorb the ember and heal from it
         if emb_query.get(coll_entity).is_ok() {
             commands.entity(coll_entity).despawn();
             s_compo.regen_flame();
-        // when a block
+
+        // when in contact with a block, try to burn
         } else if let Ok(mut b_info) = block_query.get_mut(coll_entity) {
             b_info.set_burn(time.elapsed_seconds());
+        
+        // when in contact with an enemy take damage by contact damage of the enemy
         } else if let Ok(e_info) = enemy_query.get_mut(coll_entity) {
-            s_compo.damage_flame(e_info.dmg);
-            //println!("Health: {}", s_compo.curr_flame);
+            s_compo.damage_flame(e_info.contact_dmg());
         }
     }
 }

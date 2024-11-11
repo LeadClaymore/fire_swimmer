@@ -54,10 +54,11 @@ impl EnemyInfo {
 pub enum EnemyType {
     RunDown,
     Ranged,
-    Summoner,
+    Stationary,
 }
 
 // TIL: crashed when used mutable transform remember this
+/// every update, this hanndles moving enemies
 fn enemy_movement_system(
     //commands: Commands,
     mut enemy_query: Query<(&mut Velocity, &mut ExternalImpulse, &Transform, &mut EnemyInfo)>,
@@ -67,25 +68,33 @@ fn enemy_movement_system(
     if let Ok(scorch_pos) = scorch_query.get_single()
         .and_then(|scor_tran| Ok(scor_tran.translation.truncate())) 
     {
+        // for each enemy in the map
+        //TODO need to add culling distance
         for (mut e_vel, mut e_imp, e_trans, e_info) in enemy_query.iter_mut() {
+            // the direction from the enemy to scorch
             let dir = (scorch_pos - e_trans.translation.truncate()).normalize();
+
+            // different enemy types have diffrent movement
             if e_info.e_type == EnemyType::RunDown {
-                // move towards scorch
+                // apply impulse towards scorch times the force str times the speed of an enemy
                 e_imp.impulse += dir * ENEMY_FORCE_STRENGTH * e_info.speed();
+
             } else if e_info.e_type == EnemyType::Ranged {
-                // move towards scorch until its within range
+                // if scorch is within range, stop moving
                 if e_info.is_within_range(scorch_pos.distance(e_trans.translation.truncate())) {
-                    //println!("Within range: {}", scorch_pos.distance(e_trans.translation.truncate()));
-                    //e_imp.impulse = Vec2::ZERO;
                     e_vel.linvel = Vec2::ZERO;
+                // if scorch is outside of range, move to scorch, at the enemies speed * const
                 } else {
                     e_imp.impulse += dir * ENEMY_FORCE_STRENGTH * e_info.speed();
                 }
+            } else if e_info.e_type == EnemyType::Stationary {
+                // for now nothing, might add turning later
             }
         }
     }
 }
 
+/// spawns an enemy on the location specified, with the info specified,
 pub fn spawn_enemy(
     commands: &mut Commands,
     e_pos: Vec2,
@@ -93,16 +102,19 @@ pub fn spawn_enemy(
 ) {
     commands
         .spawn((
+            // position and enemy info
+            TransformBundle::from(Transform::from_xyz(e_pos.x, e_pos.y, 0.0)),
+            e_info,
+
+            // default settings
             RigidBody::Dynamic,
             Collider::ball(25.0),
             Restitution::coefficient(0.5),
-            TransformBundle::from(Transform::from_xyz(e_pos.x, e_pos.y, 0.0)),
             ExternalImpulse::default(),
             Velocity::default(),
             GravityScale(0.0),
             ColliderMassProperties::Density(1.0),
             LockedAxes::ROTATION_LOCKED,
             ActiveEvents::COLLISION_EVENTS,
-            e_info,
         ));
 }
