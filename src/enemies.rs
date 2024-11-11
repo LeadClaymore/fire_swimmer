@@ -47,9 +47,9 @@ impl EnemyInfo {
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq)]
 #[allow(dead_code)]
 pub enum EnemyType {
-    run_down,
-    ranged,
-    summoner,
+    RunDown,
+    Ranged,
+    Summoner,
 }
 
 // TIL: crashed when used mutable transform remember this
@@ -63,7 +63,7 @@ fn enemy_movement_system(
         .and_then(|scor_tran| Ok(scor_tran.translation.truncate())) 
     {
         for (mut e_imp, e_trans, e_info) in enemy_query.iter_mut() {
-            if e_info.e_type == EnemyType::run_down {
+            if e_info.e_type == EnemyType::RunDown {
                 // move towards scorch
             e_imp.impulse += (scorch_pos - e_trans.translation.truncate()).normalize()
             * ENEMY_FORCE_STRENGTH * e_info.speed();

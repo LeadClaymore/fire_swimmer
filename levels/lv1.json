@@ -84,12 +84,12 @@
     ],
     "enemies": [
         {
-            "e_type": "RunDown",
             "pos": [2000.0, 100.0],
             "size": 25.0,
             "e_info": {
+                "e_type": "RunDown",
                 "health": 100.0,
-                "speed": 10.0,
+                "move_speed": 10.0,
                 "dmg": 10.0
             }
         }
