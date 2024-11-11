@@ -1,3 +1,5 @@
+use std::default;
+
 use bevy::{ecs::query, math::NormedVectorSpace, prelude::*};
 use bevy_rapier2d::prelude::*;
 
@@ -49,12 +51,61 @@ impl EnemyInfo {
     }
 }
 
+/// the type of enemy
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq)]
 #[allow(dead_code)]
 pub enum EnemyType {
     RunDown,
     Ranged,
     Stationary,
+}
+
+/// enum to store all the projectile structs
+#[derive(Component, Debug, Clone, Copy, Deserialize, PartialEq)]
+#[allow(dead_code)]
+pub enum ProjectileType {
+    Contact(ContactProj),
+}
+
+impl ProjectileType {
+    fn default() -> ProjectileType {
+        ProjectileType::Contact(ContactProj {
+            dmg: 10.0,
+            spd: 10.0,
+            size: 25.0,
+        })
+    }
+
+    fn get_size(&self) -> f32 {
+        match self {
+            ProjectileType::Contact(foo) => foo.size,
+            _ => 0.0,
+        }
+    }
+
+    fn get_dmg(&self) -> f32 {
+        match self {
+            ProjectileType::Contact(foo) => foo.dmg,
+            _ => 0.0,
+        }
+    }
+
+    fn get_spd(&self) -> f32 {
+        match self {
+            ProjectileType::Contact(foo) => foo.spd,
+            _ => 0.0,
+        }
+    }
+}
+
+/// this type of projectile 
+/// moves a specific speed, (spd) at size (size) and on contact does (dmg) damage
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq)]
+#[allow(dead_code)]
+pub struct ContactProj {
+    dmg: f32,
+    spd: f32,
+    size: f32,
 }
 
 // TIL: crashed when used mutable transform remember this
