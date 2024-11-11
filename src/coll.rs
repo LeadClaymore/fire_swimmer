@@ -94,7 +94,7 @@ fn scorch_collision (
             b_info.set_burn(time.elapsed_seconds());
         } else if let Ok(e_info) = enemy_query.get_mut(coll_entity) {
             s_compo.damage_flame(e_info.dmg);
-            println!("Health: {}", s_compo.curr_flame);
+            //println!("Health: {}", s_compo.curr_flame);
         }
     }
 }

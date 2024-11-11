@@ -32,6 +32,7 @@ pub struct EnemyInfo {
     pub health: f32,
     pub move_speed: f32,
     pub dmg: f32,
+    pub range: f32,
 }
 
 impl EnemyInfo {
@@ -41,6 +42,10 @@ impl EnemyInfo {
 
     pub fn speed(&self) -> f32 {
         self.move_speed
+    }
+
+    pub fn is_within_range(&self, dist: f32) -> bool {
+        dist < self.range
     }
 }
 
@@ -55,18 +60,27 @@ pub enum EnemyType {
 // TIL: crashed when used mutable transform remember this
 fn enemy_movement_system(
     //commands: Commands,
-    mut enemy_query: Query<(&mut ExternalImpulse, &Transform, &mut EnemyInfo)>,
+    mut enemy_query: Query<(&mut Velocity, &mut ExternalImpulse, &Transform, &mut EnemyInfo)>,
     scorch_query: Query<&Transform, With<Scorch>>,
 ) {
-    // takes the transform from scorch, and maps the 2d+z space into a 2d space
+    // takes the transform from scorch, and maps the 2d + z space into a 2d space
     if let Ok(scorch_pos) = scorch_query.get_single()
         .and_then(|scor_tran| Ok(scor_tran.translation.truncate())) 
     {
-        for (mut e_imp, e_trans, e_info) in enemy_query.iter_mut() {
+        for (mut e_vel, mut e_imp, e_trans, e_info) in enemy_query.iter_mut() {
+            let dir = (scorch_pos - e_trans.translation.truncate()).normalize();
             if e_info.e_type == EnemyType::RunDown {
                 // move towards scorch
-            e_imp.impulse += (scorch_pos - e_trans.translation.truncate()).normalize()
-            * ENEMY_FORCE_STRENGTH * e_info.speed();
+                e_imp.impulse += dir * ENEMY_FORCE_STRENGTH * e_info.speed();
+            } else if e_info.e_type == EnemyType::Ranged {
+                // move towards scorch until its within range
+                if e_info.is_within_range(scorch_pos.distance(e_trans.translation.truncate())) {
+                    //println!("Within range: {}", scorch_pos.distance(e_trans.translation.truncate()));
+                    //e_imp.impulse = Vec2::ZERO;
+                    e_vel.linvel = Vec2::ZERO;
+                } else {
+                    e_imp.impulse += dir * ENEMY_FORCE_STRENGTH * e_info.speed();
+                }
             }
         }
     }
@@ -84,6 +98,7 @@ pub fn spawn_enemy(
             Restitution::coefficient(0.5),
             TransformBundle::from(Transform::from_xyz(e_pos.x, e_pos.y, 0.0)),
             ExternalImpulse::default(),
+            Velocity::default(),
             GravityScale(0.0),
             ColliderMassProperties::Density(1.0),
             LockedAxes::ROTATION_LOCKED,

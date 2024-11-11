@@ -84,13 +84,25 @@
     ],
     "enemies": [
         {
-            "pos": [2000.0, 100.0],
+            "pos": [9000.0, 100.0],
             "size": 25.0,
             "e_info": {
                 "e_type": "RunDown",
                 "health": 100.0,
                 "move_speed": 10.0,
-                "dmg": 10.0
+                "dmg": 10.0,
+                "range": 0.0
+            }
+        },
+        {
+            "pos": [1000.0, 100.0],
+            "size": 25.0,
+            "e_info": {
+                "e_type": "Ranged",
+                "health": 100.0,
+                "move_speed": 10.0,
+                "dmg": 10.0,
+                "range": 250.0
             }
         }
     ]
