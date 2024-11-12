@@ -34,6 +34,8 @@ pub struct EnemyInfo {
     pub dmg: f32,
     pub range: f32,
     pub size: f32,
+    pub cooldown: f32,
+    pub active_cooldown: f32,
 }
 
 impl EnemyInfo {
@@ -47,6 +49,14 @@ impl EnemyInfo {
 
     pub fn is_within_range(&self, dist: f32) -> bool {
         dist < self.range
+    }
+
+    pub fn handle_shooting(&mut self, curr_time: f32) -> bool {
+        if curr_time > self.active_cooldown + self.cooldown {
+            self.active_cooldown = curr_time;
+            return true;
+        }
+        return false;
     }
 }
 
@@ -111,6 +121,7 @@ pub struct ContactProj {
 // TIL: crashed when used mutable transform remember this
 /// every update, this hanndles moving enemies
 fn enemy_movement_system(
+    time: Res<Time>,
     mut commands: Commands,
     mut enemy_query: Query<(&mut Velocity, &mut ExternalImpulse, &Transform, &mut EnemyInfo)>,
     scorch_query: Query<&Transform, With<Scorch>>,
@@ -125,7 +136,7 @@ fn enemy_movement_system(
             mut e_vel, 
             mut e_imp, 
             e_trans, 
-            e_info
+            mut e_info
         ) in enemy_query.iter_mut() {
             // the direction from the enemy to scorch
             let dir = (scorch_pos - e_trans.translation.truncate()).normalize();
@@ -139,15 +150,17 @@ fn enemy_movement_system(
                 // if scorch is within range, stop moving
                 if e_info.is_within_range(scorch_pos.distance(e_trans.translation.truncate())) {
                     e_vel.linvel = Vec2::ZERO;
-                    ranged_enemy_shoot( 
-                        &mut commands, 
-                        //TODO I think I need a ofset for spawning
-                        // but they despawn on colliding with themselves and spawn on update
-                        e_trans.translation.truncate() + dir * (e_info.size + 0.0),
-                        dir,
-                        ProjectileType::default(),
-                        //*e_info,
-                    );
+                    if e_info.handle_shooting(time.elapsed_seconds()) {
+                        ranged_enemy_shoot( 
+                            &mut commands, 
+                            //TODO I think I need a ofset for spawning
+                            e_trans.translation.truncate() + dir * (e_info.size + 20.0),
+                            dir,
+                            ProjectileType::default(),
+                            //*e_info,
+                        );
+                    }
+
                 // if scorch is outside of range, move to scorch, at the enemies speed * const
                 } else {
                     e_imp.impulse += dir * ENEMY_FORCE_STRENGTH * e_info.speed();
@@ -193,13 +206,14 @@ pub fn ranged_enemy_shoot(
     p_type: ProjectileType,
     //e_type: EnemyInfo,
 ) {
+    //println!("shoot");
     commands
         .spawn((
             // from data provided
             TransformBundle::from(Transform::from_xyz(p_pos.x, p_pos.y, 0.0)),
             Collider::ball(p_type.get_size()),
             ExternalImpulse {
-                impulse: p_dir * p_type.get_spd() * ENEMY_FORCE_STRENGTH * 99.9,
+                impulse: p_dir * p_type.get_spd() * ENEMY_FORCE_STRENGTH * 10.0,
                 ..default()
             },
             p_type,
