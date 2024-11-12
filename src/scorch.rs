@@ -10,7 +10,6 @@ use bevy::window::PrimaryWindow;
 use crate::{
     blocks::BlockInfo, 
     coll::DebugComp, 
-    ember::EmberComponent, 
     ember,
     rng::RngResource
 };

@@ -1,11 +1,9 @@
-use std::default;
-
-use bevy::{ecs::query, math::NormedVectorSpace, prelude::*};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use serde::Deserialize;
 
-use crate::{scorch::Scorch, blocks::BlockInfo};
+use crate::scorch::Scorch;
 
 pub struct EnemyPlugin;
 
@@ -68,8 +66,9 @@ pub enum ProjectileType {
     Contact(ContactProj),
 }
 
+#[allow(dead_code)]
 impl ProjectileType {
-    fn default() -> ProjectileType {
+    pub fn default() -> ProjectileType {
         ProjectileType::Contact(ContactProj {
             dmg: 10.0,
             spd: 10.0,
@@ -77,24 +76,24 @@ impl ProjectileType {
         })
     }
 
-    fn get_size(&self) -> f32 {
+    pub fn get_size(&self) -> f32 {
         match self {
             ProjectileType::Contact(foo) => foo.size,
-            _ => 0.0,
+            //_ => 0.0,
         }
     }
 
-    fn get_dmg(&self) -> f32 {
+    pub fn get_dmg(&self) -> f32 {
         match self {
             ProjectileType::Contact(foo) => foo.dmg,
-            _ => 0.0,
+            //_ => 0.0,
         }
     }
 
-    fn get_spd(&self) -> f32 {
+    pub fn get_spd(&self) -> f32 {
         match self {
             ProjectileType::Contact(foo) => foo.spd,
-            _ => 0.0,
+            //_ => 0.0,
         }
     }
 }

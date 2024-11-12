@@ -6,7 +6,7 @@ use std::io::BufReader;
 // external stuff
 // elsewhere in the project
 use crate::blocks::BlockInfo;
-use crate::enemies::{self, spawn_enemy, EnemyInfo};
+use crate::enemies::{spawn_enemy, EnemyInfo};
 
 #[derive(Bundle)]
 pub struct SdBundle {
