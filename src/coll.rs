@@ -30,18 +30,19 @@ impl Plugin for CollPlugin {
 pub struct DebugComp;
 
 fn collision_event_system (
+    mut commands: Commands,
     mut collision_events: EventReader<CollisionEvent>,
     time: Res<Time>,
-    mut binfo_query: Query<(Entity, &mut BlockInfo)>,
+    mut binfo_query: Query<&mut BlockInfo>,
     ember_query: Query<Entity, With<EmberComponent>>,
-    proj_query: Query<(Entity, &mut ProjectileType)>,
+    mut proj_query: Query<&mut ProjectileType>,
 ) {
     //TODO so this is how you are meant to do collisions but I should implement collision flags in the Started
     for c_event in collision_events.read() {
         match c_event {
             CollisionEvent::Started(ent1, ent2, _) => {
                 // check if 
-                if let Ok((_block_ent, mut binfo)) = binfo_query.get_mut(*ent1) {
+                if let Ok(mut binfo) = binfo_query.get_mut(*ent1) {
                     if ember_query.get(*ent2).is_ok() {
                         if binfo.burnable && binfo.burn_time.1 == 0.0 {
                             binfo.set_burn(time.elapsed_seconds());
@@ -49,14 +50,21 @@ fn collision_event_system (
                     }
                 }
                 // same but in reverse
-                else if let Ok((_block_ent, mut binfo)) = binfo_query.get_mut(*ent2) {
+                else if let Ok(mut binfo) = binfo_query.get_mut(*ent2) {
                     if ember_query.get(*ent1).is_ok() {
                         if binfo.burnable && binfo.burn_time.1 == 0.0 {
                             binfo.set_burn(time.elapsed_seconds());
                         }
                     }
                 }
-                
+                //projectile collisions and reverse
+                else if let Ok(mut _p_info) = proj_query.get_mut(*ent1) {
+                    commands.entity(*ent1).despawn();
+                    //TODO when more projectile types exist handle their interactions
+                    //TODO this currently might despawn the projectile if this handles the collision before scorch
+                } else if let Ok(mut _p_info) = proj_query.get_mut(*ent2) {
+                    commands.entity(*ent2).despawn();
+                }
             }
             CollisionEvent::Stopped(_, _, _) => {
                 //currently unused, If I wanted to do something when something stops colliding it would be here

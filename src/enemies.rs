@@ -121,7 +121,12 @@ fn enemy_movement_system(
     {
         // for each enemy in the map
         //TODO need to add culling distance
-        for (mut e_vel, mut e_imp, e_trans, e_info) in enemy_query.iter_mut() {
+        for (
+            mut e_vel, 
+            mut e_imp, 
+            e_trans, 
+            e_info
+        ) in enemy_query.iter_mut() {
             // the direction from the enemy to scorch
             let dir = (scorch_pos - e_trans.translation.truncate()).normalize();
 
@@ -136,9 +141,12 @@ fn enemy_movement_system(
                     e_vel.linvel = Vec2::ZERO;
                     ranged_enemy_shoot( 
                         &mut commands, 
-                        e_trans.translation.truncate() + dir * e_info.size,
+                        //TODO I think I need a ofset for spawning
+                        // but they despawn on colliding with themselves and spawn on update
+                        e_trans.translation.truncate() + dir * (e_info.size + 0.0),
                         dir,
                         ProjectileType::default(),
+                        //*e_info,
                     );
                 // if scorch is outside of range, move to scorch, at the enemies speed * const
                 } else {
@@ -183,6 +191,7 @@ pub fn ranged_enemy_shoot(
     p_pos: Vec2,
     p_dir: Vec2,
     p_type: ProjectileType,
+    //e_type: EnemyInfo,
 ) {
     commands
         .spawn((
@@ -190,7 +199,7 @@ pub fn ranged_enemy_shoot(
             TransformBundle::from(Transform::from_xyz(p_pos.x, p_pos.y, 0.0)),
             Collider::ball(p_type.get_size()),
             ExternalImpulse {
-                impulse: p_dir * p_type.get_spd() * ENEMY_FORCE_STRENGTH,
+                impulse: p_dir * p_type.get_spd() * ENEMY_FORCE_STRENGTH * 99.9,
                 ..default()
             },
             p_type,
