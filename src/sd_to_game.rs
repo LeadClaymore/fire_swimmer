@@ -59,6 +59,7 @@ fn spawn_from_json(
             &mut commands, 
             Vec2::from(enemy.pos),
             enemy.e_info,
+            enemy.size,
         );
     }
 

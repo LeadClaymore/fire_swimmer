@@ -35,6 +35,7 @@ pub struct EnemyInfo {
     pub move_speed: f32,
     pub dmg: f32,
     pub range: f32,
+    pub size: f32,
 }
 
 impl EnemyInfo {
@@ -111,7 +112,7 @@ pub struct ContactProj {
 // TIL: crashed when used mutable transform remember this
 /// every update, this hanndles moving enemies
 fn enemy_movement_system(
-    //commands: Commands,
+    mut commands: Commands,
     mut enemy_query: Query<(&mut Velocity, &mut ExternalImpulse, &Transform, &mut EnemyInfo)>,
     scorch_query: Query<&Transform, With<Scorch>>,
 ) {
@@ -134,6 +135,12 @@ fn enemy_movement_system(
                 // if scorch is within range, stop moving
                 if e_info.is_within_range(scorch_pos.distance(e_trans.translation.truncate())) {
                     e_vel.linvel = Vec2::ZERO;
+                    ranged_enemy_shoot( 
+                        &mut commands, 
+                        e_trans.translation.truncate() + dir * e_info.size,
+                        dir,
+                        ProjectileType::default(),
+                    );
                 // if scorch is outside of range, move to scorch, at the enemies speed * const
                 } else {
                     e_imp.impulse += dir * ENEMY_FORCE_STRENGTH * e_info.speed();
@@ -150,16 +157,17 @@ pub fn spawn_enemy(
     commands: &mut Commands,
     e_pos: Vec2,
     e_info: EnemyInfo,
+    e_size: f32,
 ) {
     commands
         .spawn((
             // position and enemy info
             TransformBundle::from(Transform::from_xyz(e_pos.x, e_pos.y, 0.0)),
+            Collider::ball(e_size),
             e_info,
 
             // default settings
             RigidBody::Dynamic,
-            Collider::ball(25.0),
             Restitution::coefficient(0.5),
             ExternalImpulse::default(),
             Velocity::default(),
@@ -167,5 +175,28 @@ pub fn spawn_enemy(
             ColliderMassProperties::Density(1.0),
             LockedAxes::ROTATION_LOCKED,
             ActiveEvents::COLLISION_EVENTS,
+        ));
+}
+
+pub fn ranged_enemy_shoot(
+    commands: &mut Commands,
+    p_pos: Vec2,
+    p_dir: Vec2,
+    p_type: ProjectileType,
+) {
+    commands
+        .spawn((
+            TransformBundle::from(Transform::from_xyz(p_pos.x, p_pos.y, 0.0)),
+            Collider::ball(p_type.get_size()),
+            ExternalImpulse {
+                impulse: p_dir,
+                ..default()
+            },
+            p_type,
+
+            LockedAxes::ROTATION_LOCKED,
+            ActiveEvents::COLLISION_EVENTS,
+            Velocity::default(),
+            GravityScale(0.0),
         ));
 }

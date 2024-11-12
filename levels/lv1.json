@@ -91,7 +91,8 @@
                 "health": 100.0,
                 "move_speed": 10.0,
                 "dmg": 10.0,
-                "range": 0.0
+                "range": 0.0,
+                "size": 25.0
             }
         },
         {
@@ -102,7 +103,8 @@
                 "health": 100.0,
                 "move_speed": 10.0,
                 "dmg": 10.0,
-                "range": 250.0
+                "range": 250.0,
+                "size": 25.0
             }
         }
     ]
