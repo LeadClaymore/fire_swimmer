@@ -73,7 +73,7 @@ impl ProjectileType {
         ProjectileType::Contact(ContactProj {
             dmg: 10.0,
             spd: 10.0,
-            size: 25.0,
+            size: 10.0,
         })
     }
 
@@ -178,6 +178,7 @@ pub fn spawn_enemy(
         ));
 }
 
+/// spawns an projectile 
 pub fn ranged_enemy_shoot(
     commands: &mut Commands,
     p_pos: Vec2,
@@ -186,14 +187,17 @@ pub fn ranged_enemy_shoot(
 ) {
     commands
         .spawn((
+            // from data provided
             TransformBundle::from(Transform::from_xyz(p_pos.x, p_pos.y, 0.0)),
             Collider::ball(p_type.get_size()),
             ExternalImpulse {
-                impulse: p_dir,
+                impulse: p_dir * p_type.get_spd() * ENEMY_FORCE_STRENGTH,
                 ..default()
             },
             p_type,
 
+            // default data
+            RigidBody::Dynamic,
             LockedAxes::ROTATION_LOCKED,
             ActiveEvents::COLLISION_EVENTS,
             Velocity::default(),
