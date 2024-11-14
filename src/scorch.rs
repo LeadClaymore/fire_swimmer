@@ -87,17 +87,25 @@ impl Scorch {
     }
 
     ///Take damage based on the send number
-    pub fn damage_flame(&mut self, dmg: f32, curr_time: f32) {
+    pub fn damage_flame(&mut self, dmg: f32, curr_time: f32) -> bool {
         if self.i_frame + self.i_frame_timer > curr_time {
-            println!("\ndamage taken!");
+            //println!("\ndamage taken!");
             if dmg < self.curr_flame {
                 self.curr_flame -= dmg;
             } else {
                 self.curr_flame = 0.0;
             }
+            return true;
         } else {
-            print!("blocked");
+            //print!("blocked");
+            return false;
         }
+    }
+
+    ///reset scorch stats
+    pub fn reset(&mut self) {
+        // currently just flame
+        self.curr_flame = self.max_flame;
     }
 
     pub fn grounded(&mut self) {
@@ -307,16 +315,23 @@ fn propell_scorch(
     }
 }
 
-// when the R key is pressed it resets it to the starting position
+#[allow(irrefutable_let_patterns, dead_code, unused_mut)]
+/// when the R key is pressed it resets it to the starting position
 fn restart_scorch(
-    mut entity_phys: Query<(&mut ExternalImpulse, &mut Velocity, &mut Transform), With<Scorch>>,
+    mut commands: Commands,
+    mut s_query: Query<(&mut Scorch, &mut ExternalImpulse, &mut Velocity, &mut Transform)>,
     key_presses: Res<ButtonInput<KeyCode>>,
 ) {
+    // let (s_entity, mut s_compo) = scor_query.single_mut();
     if key_presses.just_pressed(KeyCode::KeyR) {
-        for (mut impulse, mut velocity, mut position) in entity_phys.iter_mut() {
-            position.translation = Vec3::new(0.0, 400.0, 0.0);
-            impulse.impulse = Vec2::ZERO;
-            velocity.linvel = Vec2::ZERO;
+        // I swear if scorch DNE then this should fail just in case I will leave this, and add the allow
+        if let (mut s_info, mut s_impulse, mut s_velocity, mut s_position) = s_query.single_mut() {
+            s_position.translation = Vec3::new(0.0, 0.0, 0.0);
+            s_impulse.impulse = Vec2::ZERO;
+            s_velocity.linvel = Vec2::ZERO;
+            s_info.reset();
+        } else {
+            setup_physics(commands);
         }
     }
 }

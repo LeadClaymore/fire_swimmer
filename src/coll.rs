@@ -126,7 +126,9 @@ fn scorch_collision (
         
         // when in contact with an enemy take damage by contact damage of the enemy
         } else if let Ok(e_info) = enemy_query.get_mut(coll_entity) {
-            s_compo.damage_flame(e_info.contact_dmg(), time.elapsed_seconds());
+            if s_compo.damage_flame(e_info.contact_dmg(), time.elapsed_seconds()) {
+                //TODO add push back need to understand collisions better first tho
+            }
         }
         
         // when in contact with a projectile
