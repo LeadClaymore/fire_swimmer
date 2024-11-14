@@ -111,11 +111,11 @@ fn scorch_collision (
         
         // when in contact with an enemy take damage by contact damage of the enemy
         } else if let Ok(e_info) = enemy_query.get_mut(coll_entity) {
-            s_compo.damage_flame(e_info.contact_dmg());
+            s_compo.damage_flame(e_info.contact_dmg(), time.elapsed_seconds());
 
         // when in contact with a projectile
         } else if let Ok(p_info) = proj_query.get_mut(coll_entity) {
-            s_compo.damage_flame(p_info.get_dmg());
+            s_compo.damage_flame(p_info.get_dmg(), time.elapsed_seconds());
             commands.entity(coll_entity).despawn();
         }
     }

@@ -57,17 +57,22 @@ pub struct Scorch {
     /// current life for scorch
     pub curr_flame: f32,
 
+    /// the time that you are invincable
+    pub i_frame: f32,
+    /// the last time you were hit
+    pub i_frame_timer: f32,
+
     // pub flame_force: f32,
 
     pub double_jump: bool,
     // pub unlocked_dj: bool,
 
+    /// if you have the dash avaliable
+    /// and when the last dash was
     pub dash: (bool, f32),
-
-    /// if dash is available and when last pressed
+    /// When a was last pressed
     pub a_dash: f32,
-    
-    /// if dash is available and when last pressed
+    /// When d was last pressed
     pub d_dash: f32,
 
     // pub unlocked_dash: bool,
@@ -82,11 +87,16 @@ impl Scorch {
     }
 
     ///Take damage based on the send number
-    pub fn damage_flame(&mut self, dmg: f32) {
-        if dmg < self.curr_flame {
-            self.curr_flame -= dmg;
+    pub fn damage_flame(&mut self, dmg: f32, curr_time: f32) {
+        if self.i_frame + self.i_frame_timer > curr_time {
+            println!("\ndamage taken!");
+            if dmg < self.curr_flame {
+                self.curr_flame -= dmg;
+            } else {
+                self.curr_flame = 0.0;
+            }
         } else {
-            self.curr_flame = 0.0;
+            print!("blocked");
         }
     }
 
@@ -159,7 +169,12 @@ fn setup_physics(mut commands: Commands) {
             Scorch {
                 max_flame: 100.0,
                 curr_flame: 100.0,
+
+                i_frame: 5.0,
+                i_frame_timer: 0.0,
+
                 double_jump: false,
+
                 dash: (false, 0.0),
                 a_dash: 0.0,
                 d_dash: 0.0,
