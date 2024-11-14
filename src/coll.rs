@@ -33,10 +33,15 @@ fn collision_event_system (
     mut commands: Commands,
     mut collision_events: EventReader<CollisionEvent>,
     time: Res<Time>,
+
+    mut scor_query: Query<(Entity, &mut Scorch)>,
     mut binfo_query: Query<&mut BlockInfo>,
     ember_query: Query<Entity, With<EmberComponent>>,
     mut proj_query: Query<&mut ProjectileType>,
 ) {
+    //scorch data
+    let (s_entity, mut s_compo) = scor_query.single_mut();
+
     //TODO so this is how you are meant to do collisions but I should implement collision flags in the Started
     for c_event in collision_events.read() {
         match c_event {
@@ -58,11 +63,21 @@ fn collision_event_system (
                     }
                 }
                 //projectile collisions and reverse
-                else if let Ok(mut _p_info) = proj_query.get_mut(*ent1) {
+                else if let Ok(mut p_info) = proj_query.get_mut(*ent1) {
+                    if s_entity == *ent2 {
+                        // check if the other entity is scorch
+                        // this is because there could be overlap with the collisions if this was in the scorch collisions.
+                        //TODO might add a projectile collison class
+                        s_compo.damage_flame(p_info.get_dmg(), time.elapsed_seconds());
+                    }
                     commands.entity(*ent1).despawn();
                     //TODO when more projectile types exist handle their interactions
                     //TODO this currently might despawn the projectile if this handles the collision before scorch
-                } else if let Ok(mut _p_info) = proj_query.get_mut(*ent2) {
+                } else if let Ok(mut p_info) = proj_query.get_mut(*ent2) {
+                    // same as above
+                    if s_entity == *ent1 {
+                        s_compo.damage_flame(p_info.get_dmg(), time.elapsed_seconds());
+                    }
                     commands.entity(*ent2).despawn();
                 }
             }
@@ -112,29 +127,12 @@ fn scorch_collision (
         // when in contact with an enemy take damage by contact damage of the enemy
         } else if let Ok(e_info) = enemy_query.get_mut(coll_entity) {
             s_compo.damage_flame(e_info.contact_dmg(), time.elapsed_seconds());
-
-        // when in contact with a projectile
-        } else if let Ok(p_info) = proj_query.get_mut(coll_entity) {
-            s_compo.damage_flame(p_info.get_dmg(), time.elapsed_seconds());
-            commands.entity(coll_entity).despawn();
         }
+        
+        // when in contact with a projectile
+        // else if let Ok(p_info) = proj_query.get_mut(coll_entity) {
+        //     s_compo.damage_flame(p_info.get_dmg(), time.elapsed_seconds());
+        //     commands.entity(coll_entity).despawn();
+        // }
     }
 }
-
-// fn projectile_collision(
-//     // mut commands: Commands,
-//     // rc: Res<RapierContext>,
-//     // time: Res<Time>,
-
-//     // querys for the possible collisions
-//     mut scor_query: Query<(Entity, &mut Scorch)>,
-//     proj_collide_query: Query<(Entity, &mut ProjectileType)>,
-//     // mut block_query: Query<&mut BlockInfo>,
-//     // mut enemy_query: Query<&mut EnemyInfo>,
-// ) {
-//     //scorch data
-//     let (s_entity, mut s_compo) = scor_query.single_mut();
-
-//     //
-//     for 
-// }
