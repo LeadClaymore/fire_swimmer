@@ -10,8 +10,9 @@ use bevy::window::PrimaryWindow;
 use crate::{
     blocks::BlockInfo, 
     coll::DebugComp, 
+    //coll::GameCollisionGroups,
     ember,
-    rng::RngResource
+    rng::RngResource,
 };
 
 impl Plugin for ScorchPlugin {
@@ -163,6 +164,11 @@ fn setup_physics(mut commands: Commands) {
         .spawn((
             RigidBody::Dynamic,
             Collider::ball(50.0),
+            CollisionGroups::new(
+                // see coll.rs for what the groups mean
+                Group::GROUP_1,
+                Group::GROUP_2 | Group::GROUP_3 | Group::GROUP_4 | Group::GROUP_5,
+            ),
             Restitution::coefficient(0.1),
             TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)),
             ExternalImpulse::default(),
@@ -187,6 +193,7 @@ fn setup_physics(mut commands: Commands) {
                 a_dash: 0.0,
                 d_dash: 0.0,
             },
+            //TODO idk if I need this after I add the collision groups
             ActiveEvents::COLLISION_EVENTS,
             //Friction::coefficient(0.0),
         ));

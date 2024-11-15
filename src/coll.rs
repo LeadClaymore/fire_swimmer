@@ -26,9 +26,23 @@ impl Plugin for CollPlugin {
     }
 }
 
+pub struct GameCollisionGroups;
+impl GameCollisionGroups {
+    // these are the collision groups notice, how their bit values do not overlap.
+    // this is because the collision event is an addition of the other groups it can collide with
+    pub const GROUP_1: u32 = 0b0000_0000_0000_0001; //Scorch
+    pub const GROUP_2: u32 = 0b0000_0000_0000_0010; //Embers
+    pub const GROUP_3: u32 = 0b0000_0000_0000_0100; //Blocks
+    pub const GROUP_4: u32 = 0b0000_0000_0000_1000; //Enemies
+    pub const GROUP_5: u32 = 0b0000_0000_0001_0000; //Enemy Projectiles
+}
+
 #[derive(Component)]
 pub struct DebugComp;
 
+
+
+// old code after collision groups added
 fn collision_event_system (
     mut commands: Commands,
     mut collision_events: EventReader<CollisionEvent>,
