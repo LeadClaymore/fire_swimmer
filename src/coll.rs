@@ -26,21 +26,63 @@ impl Plugin for CollPlugin {
     }
 }
 
-pub struct GameCollisionGroups;
-impl GameCollisionGroups {
-    // these are the collision groups notice, how their bit values do not overlap.
-    // this is because the collision event is an addition of the other groups it can collide with
-    pub const GROUP_1: u32 = 0b0000_0000_0000_0001; //Scorch
-    pub const GROUP_2: u32 = 0b0000_0000_0000_0010; //Embers
-    pub const GROUP_3: u32 = 0b0000_0000_0000_0100; //Blocks
-    pub const GROUP_4: u32 = 0b0000_0000_0000_1000; //Enemies
-    pub const GROUP_5: u32 = 0b0000_0000_0001_0000; //Enemy Projectiles
-}
+// pub struct GameCollisionGroups;
+// impl GameCollisionGroups {
+//     // these are the collision groups notice, how their bit values do not overlap.
+//     // this is because the collision event is an addition of the other groups it can collide with
+//     pub const GROUP_1: u32 = 0b0000_0000_0000_0001; //Scorch
+//     pub const GROUP_2: u32 = 0b0000_0000_0000_0010; //Embers
+//     pub const GROUP_3: u32 = 0b0000_0000_0000_0100; //Blocks
+//     pub const GROUP_4: u32 = 0b0000_0000_0000_1000; //Enemies
+//     pub const GROUP_5: u32 = 0b0000_0000_0001_0000; //Enemy Projectiles
+// }
 
 #[derive(Component)]
 pub struct DebugComp;
 
+fn collision_handling(
+    mut commands: Commands,
+    mut collision_events: EventReader<CollisionEvent>,
+    time: Res<Time>,
 
+    scorch_query: Query<Entity, With<Scorch>>,
+    ember_query: Query<Entity, With<EmberComponent>>,
+    block_query: Query<Entity, With<BlockInfo>>,
+    enemy_query: Query<Entity, With<EnemyInfo>>,
+    e_proj_query: Query<Entity, With<ProjectileType>>,
+) {
+        //TODO I should implement collision flags in the Started
+        for c_event in collision_events.read() {
+            match c_event {
+                CollisionEvent::Started(e1, e2, _) => {
+                    // this was in a guide, and it looks good I guess
+                    //TODO See if this causes proformance problems
+                    let e1_is_scorch = scorch_query.get(*e1).is_ok();
+                    let e2_is_scorch = scorch_query.get(*e2).is_ok();
+                    
+                    let e1_is_ember = ember_query.get(*e1).is_ok();
+                    let e2_is_ember = ember_query.get(*e2).is_ok();
+                    
+                    let e1_is_block = block_query.get(*e1).is_ok();
+                    let e2_is_block = block_query.get(*e2).is_ok();
+                    
+                    let e1_is_enemy = enemy_query.get(*e1).is_ok();
+                    let e2_is_enemy = enemy_query.get(*e2).is_ok();
+                    
+                    let e1_is_e_proj = e_proj_query.get(*e1).is_ok();
+                    let e2_is_e_proj = e_proj_query.get(*e2).is_ok();
+
+                    // scorch and ember
+                    if (e1_is_scorch && e1_is_ember) || (e1_is_ember && e1_is_scorch) {
+                        
+                    }
+                }
+                CollisionEvent::Stopped(_, _, _) => {
+                    //currently unused, If I wanted to do something when something stops colliding it would be here
+                }
+            }
+        }
+}
 
 // old code after collision groups added
 fn collision_event_system (

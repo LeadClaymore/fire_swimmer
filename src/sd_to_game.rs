@@ -70,6 +70,13 @@ fn spawn_from_json(
                 Collider::cuboid(block.size[0], block.size[1]),
                 TransformBundle::from(Transform::from_xyz(block.pos[0], block.pos[1], 0.0)),
                 block.block_info,
+
+                CollisionGroups::new(
+                    // G1 is Scorch, G2 is embers, G3 is blocks, G4 is enemies, G5 is enemy_projectiles
+                    Group::GROUP_3,
+                    //TODO idk if I need the blocks to specificaly colide with everything or if they can collide with it
+                    Group::GROUP_1 | Group::GROUP_2 | Group::GROUP_4 | Group::GROUP_5,
+                ),
                 ActiveEvents::COLLISION_EVENTS,
                 //Friction::coefficient(2.0),
             ));

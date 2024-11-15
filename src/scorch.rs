@@ -165,7 +165,7 @@ fn setup_physics(mut commands: Commands) {
             RigidBody::Dynamic,
             Collider::ball(50.0),
             CollisionGroups::new(
-                // see coll.rs for what the groups mean
+                // G1 is Scorch, G2 is embers, G3 is blocks, G4 is enemies, G5 is enemy_projectiles
                 Group::GROUP_1,
                 Group::GROUP_2 | Group::GROUP_3 | Group::GROUP_4 | Group::GROUP_5,
             ),

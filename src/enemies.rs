@@ -187,6 +187,11 @@ pub fn spawn_enemy(
             e_info,
 
             // default settings
+            CollisionGroups::new(
+                // G1 is Scorch, G2 is embers, G3 is blocks, G4 is enemies, G5 is enemy_projectiles
+                Group::GROUP_4,
+                Group::GROUP_1 | Group::GROUP_2 | Group::GROUP_3,
+            ),
             RigidBody::Dynamic,
             Restitution::coefficient(0.5),
             ExternalImpulse::default(),
@@ -212,6 +217,12 @@ pub fn ranged_enemy_shoot(
             // from data provided
             TransformBundle::from(Transform::from_xyz(p_pos.x, p_pos.y, 0.0)),
             Collider::ball(p_type.get_size()),
+            CollisionGroups::new(
+                // G1 is Scorch, G2 is embers, G3 is blocks, G4 is enemies, G5 is enemy_projectiles
+                Group::GROUP_5,
+                //TODO currently I just want the projectiles interacting with blocks and scorch
+                Group::GROUP_1 | Group::GROUP_3,
+            ),
             ExternalImpulse {
                 impulse: p_dir * p_type.get_spd() * ENEMY_FORCE_STRENGTH * 10.0,
                 ..default()
