@@ -46,11 +46,11 @@ fn collision_handling(
     mut collision_events: EventReader<CollisionEvent>,
     time: Res<Time>,
 
-    scorch_query: Query<&mut Scorch>,
-    ember_query: Query<&mut EmberComponent>,
-    block_query: Query<&mut BlockInfo>,
-    enemy_query: Query<&mut EnemyInfo>,
-    e_proj_query: Query<&mut ProjectileType>,
+    mut scorch_query: Query<&mut Scorch>,
+    mut ember_query: Query<&mut EmberComponent>,
+    mut block_query: Query<&mut BlockInfo>,
+    mut enemy_query: Query<&mut EnemyInfo>,
+    mut e_proj_query: Query<&mut ProjectileType>,
 
     cg_query: Query<&CollisionGroups>,
 ) {
@@ -61,39 +61,68 @@ fn collision_handling(
                 // this gets the bits from the collision group of the entity, because all should have them
                 if let (Ok(e1_bits), Ok(e2_bits)) = (
                     cg_query.get(*e1).map(|cg| cg.memberships.bits()), 
-                    cg_query.get(*e1).map(|cg| cg.memberships.bits())
+                    cg_query.get(*e2).map(|cg| cg.memberships.bits())
                 ) {
                     // this orders e1 and e2 by the bits in their collision group (lower bits first)
                     //TODO if I start adding entities with more then 1 group membership see if this still works
-                    let (e1, e2) = if e1_bits >= e2_bits {(e2, e1)} else {(e1, e2)};
+                    let (e1, e2) = if e1_bits >= e2_bits { (*e2, *e1) } else { (*e1, *e2) };
                     
-                    // this was in a guide, and it looks good I guess
-                    //TODO See if this causes proformance problems
-                    let e1_is_scorch = scorch_query.get(*e1).is_ok();
-                    let e2_is_scorch = scorch_query.get(*e2).is_ok();
-                    
-                    let e1_is_ember = ember_query.get(*e1).is_ok();
-                    let e2_is_ember = ember_query.get(*e2).is_ok();
-                    
-                    let e1_is_block = block_query.get(*e1).is_ok();
-                    let e2_is_block = block_query.get(*e2).is_ok();
-                    
-                    let e1_is_enemy = enemy_query.get(*e1).is_ok();
-                    let e2_is_enemy = enemy_query.get(*e2).is_ok();
-                    
-                    let e1_is_e_proj = e_proj_query.get(*e1).is_ok();
-                    let e2_is_e_proj = e_proj_query.get(*e2).is_ok();
-
-                    // scorch and ember
-                    if (e1_is_scorch && e2_is_ember) || (e1_is_ember && e2_is_scorch) {
-                        
-                    } else if (e1_is_scorch && e2_is_ember) || (e1_is_ember && e2_is_scorch) {
-                        
+                    // if e1 is scorch
+                    if let Ok(mut s_info) = scorch_query.get_mut(e1) {
+                        //println!("collisions are happening with scorch");
+                        if let Ok(_e_info) = ember_query.get_mut(e2) {
+                            //println!("scorch ember collision");
+                            commands.entity(e2).despawn();
+                            s_info.regen_flame();
+                        } else if let Ok(b_info) = block_query.get_mut(e2) {
+                            //println!("scorch block collision");
+                        } else if let Ok(e_info) = enemy_query.get_mut(e2) {
+                            //println!("scorch enemy collision");
+                        } else if let Ok(e_proj_info) = e_proj_query.get_mut(e2) {
+                            //println!("scorch projectile collision");
+                        } else {
+                            println!("ERROR: scorch unknown collision {:b}, {:b}", e1_bits, e2_bits);
+                        }
+                    // if e1 is ember
+                    } else if let Ok(mut _e_info) = ember_query.get_mut(e1) {
+                        //println!("collisions are happening with scorch");
+                        if let Ok(b_info) = block_query.get_mut(e2) {
+                            //println!("ember block collision");
+                        } else if let Ok(e_info) = enemy_query.get_mut(e2) {
+                            //println!("ember enemy collision");
+                        } else if let Ok(e_proj_info) = e_proj_query.get_mut(e2) {
+                            //println!("ember projectile collision");
+                        } else {
+                            println!("ERROR: ember unknown collision {:b}, {:b}", e1_bits, e2_bits);
+                        }
                     }
+
+                    // this was in a guide, and it looks good I guess
+                    //-TODO See if this causes proformance problems
+                    // let e1_is_scorch = scorch_query.get(*e1).is_ok();
+                    // let e2_is_scorch = scorch_query.get(*e2).is_ok();
+                    
+                    // let e1_is_ember = ember_query.get(*e1).is_ok();
+                    // let e2_is_ember = ember_query.get(*e2).is_ok();
+                    
+                    // let e1_is_block = block_query.get(*e1).is_ok();
+                    // let e2_is_block = block_query.get(*e2).is_ok();
+                    
+                    // let e1_is_enemy = enemy_query.get(*e1).is_ok();
+                    // let e2_is_enemy = enemy_query.get(*e2).is_ok();
+                    
+                    // let e1_is_e_proj = e_proj_query.get(*e1).is_ok();
+                    // let e2_is_e_proj = e_proj_query.get(*e2).is_ok();
+
+                    // // scorch and ember
+                    // if (e1_is_scorch && e2_is_ember) || (e1_is_ember && e2_is_scorch) {
+                        
+                    // } else if (e1_is_scorch && e2_is_ember) || (e1_is_ember && e2_is_scorch) {
+                        
+                    // }
                 } else {
                     println!("Error in getting collision group from entity for collision");
                 }
-
             }
             CollisionEvent::Stopped(_, _, _) => {
                 //currently unused, If I wanted to do something when something stops colliding it would be here

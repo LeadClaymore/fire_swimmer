@@ -316,6 +316,12 @@ fn propell_scorch(
                     DebugComp,
                     Collider::segment(start, end),
                     Sensor,
+                    //TODO I expected and error with this debug object colliding
+                    CollisionGroups::new(
+                        // G30 is going to be debug objects
+                        Group::GROUP_30,
+                        Group::NONE
+                    ),
                 ));
             }
         }
