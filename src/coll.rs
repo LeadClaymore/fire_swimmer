@@ -46,16 +46,27 @@ fn collision_handling(
     mut collision_events: EventReader<CollisionEvent>,
     time: Res<Time>,
 
-    scorch_query: Query<Entity, With<Scorch>>,
-    ember_query: Query<Entity, With<EmberComponent>>,
-    block_query: Query<Entity, With<BlockInfo>>,
-    enemy_query: Query<Entity, With<EnemyInfo>>,
-    e_proj_query: Query<Entity, With<ProjectileType>>,
+    scorch_query: Query<&mut Scorch>,
+    ember_query: Query<&mut EmberComponent>,
+    block_query: Query<&mut BlockInfo>,
+    enemy_query: Query<&mut EnemyInfo>,
+    e_proj_query: Query<&mut ProjectileType>,
+
+    cg_query: Query<&CollisionGroups>,
 ) {
-        //TODO I should implement collision flags in the Started
-        for c_event in collision_events.read() {
-            match c_event {
-                CollisionEvent::Started(e1, e2, _) => {
+    //TODO I should implement collision flags in the Started
+    for c_event in collision_events.read() {
+        match c_event {
+            CollisionEvent::Started(e1, e2, _) => {
+                // this gets the bits from the collision group of the entity, because all should have them
+                if let (Ok(e1_bits), Ok(e2_bits)) = (
+                    cg_query.get(*e1).map(|cg| cg.memberships.bits()), 
+                    cg_query.get(*e1).map(|cg| cg.memberships.bits())
+                ) {
+                    // this orders e1 and e2 by the bits in their collision group (lower bits first)
+                    //TODO if I start adding entities with more then 1 group membership see if this still works
+                    let (e1, e2) = if e1_bits >= e2_bits {(e2, e1)} else {(e1, e2)};
+                    
                     // this was in a guide, and it looks good I guess
                     //TODO See if this causes proformance problems
                     let e1_is_scorch = scorch_query.get(*e1).is_ok();
@@ -74,15 +85,21 @@ fn collision_handling(
                     let e2_is_e_proj = e_proj_query.get(*e2).is_ok();
 
                     // scorch and ember
-                    if (e1_is_scorch && e1_is_ember) || (e1_is_ember && e1_is_scorch) {
+                    if (e1_is_scorch && e2_is_ember) || (e1_is_ember && e2_is_scorch) {
+                        
+                    } else if (e1_is_scorch && e2_is_ember) || (e1_is_ember && e2_is_scorch) {
                         
                     }
+                } else {
+                    println!("Error in getting collision group from entity for collision");
                 }
-                CollisionEvent::Stopped(_, _, _) => {
-                    //currently unused, If I wanted to do something when something stops colliding it would be here
-                }
+
+            }
+            CollisionEvent::Stopped(_, _, _) => {
+                //currently unused, If I wanted to do something when something stops colliding it would be here
             }
         }
+    }
 }
 
 // // old code after collision groups added
