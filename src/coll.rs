@@ -70,56 +70,49 @@ fn collision_handling(
                     // if e1 is scorch
                     if let Ok(mut s_info) = scorch_query.get_mut(e1) {
                         //println!("collisions are happening with scorch");
+                        //scorch ember collision
                         if let Ok(_e_info) = ember_query.get_mut(e2) {
                             //println!("scorch ember collision");
                             commands.entity(e2).despawn();
                             s_info.regen_flame();
-                        } else if let Ok(b_info) = block_query.get_mut(e2) {
+                        //scorch block collision
+                        } else if let Ok(mut b_info) = block_query.get_mut(e2) {
                             //println!("scorch block collision");
+                            if b_info.burnable && b_info.burn_time.1 == 0.0 {
+                                b_info.set_burn(time.elapsed_seconds());
+                            }
+                        //scorch enemy collision
                         } else if let Ok(e_info) = enemy_query.get_mut(e2) {
                             //println!("scorch enemy collision");
-                        } else if let Ok(e_proj_info) = e_proj_query.get_mut(e2) {
+                            // this makes scorch take damage //TODO might want to make the enemies take damage too
+                            if s_info.damage_flame(e_info.contact_dmg(), time.elapsed_seconds()) {
+                                //TODO add push back need to understand collisions better first tho
+                            }
+                        //scorch projectile collision
+                        } else if let Ok(p_info) = e_proj_query.get_mut(e2) {
                             //println!("scorch projectile collision");
+                            // when scorch collides with an projectile it takes damage and the proj despawns
+                            s_info.damage_flame(p_info.get_dmg(), time.elapsed_seconds());
+                            commands.entity(e2).despawn();
                         } else {
                             println!("ERROR: scorch unknown collision {:b}, {:b}", e1_bits, e2_bits);
                         }
                     // if e1 is ember
                     } else if let Ok(mut _e_info) = ember_query.get_mut(e1) {
                         //println!("collisions are happening with scorch");
-                        if let Ok(b_info) = block_query.get_mut(e2) {
+                        if let Ok(mut b_info) = block_query.get_mut(e2) {
                             //println!("ember block collision");
+                            if b_info.burnable && b_info.burn_time.1 == 0.0 {
+                                b_info.set_burn(time.elapsed_seconds());
+                            }
                         } else if let Ok(e_info) = enemy_query.get_mut(e2) {
                             //println!("ember enemy collision");
-                        } else if let Ok(e_proj_info) = e_proj_query.get_mut(e2) {
+                        } else if let Ok(p_info) = e_proj_query.get_mut(e2) {
                             //println!("ember projectile collision");
                         } else {
                             println!("ERROR: ember unknown collision {:b}, {:b}", e1_bits, e2_bits);
                         }
                     }
-
-                    // this was in a guide, and it looks good I guess
-                    //-TODO See if this causes proformance problems
-                    // let e1_is_scorch = scorch_query.get(*e1).is_ok();
-                    // let e2_is_scorch = scorch_query.get(*e2).is_ok();
-                    
-                    // let e1_is_ember = ember_query.get(*e1).is_ok();
-                    // let e2_is_ember = ember_query.get(*e2).is_ok();
-                    
-                    // let e1_is_block = block_query.get(*e1).is_ok();
-                    // let e2_is_block = block_query.get(*e2).is_ok();
-                    
-                    // let e1_is_enemy = enemy_query.get(*e1).is_ok();
-                    // let e2_is_enemy = enemy_query.get(*e2).is_ok();
-                    
-                    // let e1_is_e_proj = e_proj_query.get(*e1).is_ok();
-                    // let e2_is_e_proj = e_proj_query.get(*e2).is_ok();
-
-                    // // scorch and ember
-                    // if (e1_is_scorch && e2_is_ember) || (e1_is_ember && e2_is_scorch) {
-                        
-                    // } else if (e1_is_scorch && e2_is_ember) || (e1_is_ember && e2_is_scorch) {
-                        
-                    // }
                 } else {
                     println!("Error in getting collision group from entity for collision");
                 }
