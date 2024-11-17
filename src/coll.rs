@@ -54,6 +54,8 @@ fn collision_handling(
 
     cg_query: Query<&CollisionGroups>,
 ) {
+    //TODO I need to implement setting entitys to be despawned at the end of the frame, rather then mid collision.
+    // Duplicate collisions cause warnings and might be an issue later
     //TODO I should implement collision flags in the Started
     for c_event in collision_events.read() {
         match c_event {
@@ -71,7 +73,7 @@ fn collision_handling(
                     if let Ok(mut s_info) = scorch_query.get_mut(e1) {
                         //println!("collisions are happening with scorch");
                         //scorch ember collision
-                        if let Ok(_e_info) = ember_query.get_mut(e2) {
+                        if let Ok(_em_info) = ember_query.get_mut(e2) {
                             //println!("scorch ember collision");
                             commands.entity(e2).despawn();
                             s_info.regen_flame();
@@ -82,12 +84,20 @@ fn collision_handling(
                                 b_info.set_burn(time.elapsed_seconds());
                             }
                         //scorch enemy collision
-                        } else if let Ok(e_info) = enemy_query.get_mut(e2) {
+                        } else if let Ok(mut en_info) = enemy_query.get_mut(e2) {
                             //println!("scorch enemy collision");
                             // this makes scorch take damage //TODO might want to make the enemies take damage too
-                            if s_info.damage_flame(e_info.contact_dmg(), time.elapsed_seconds()) {
+                            if s_info.damage_flame(en_info.contact_dmg(), time.elapsed_seconds()) {
                                 //TODO add push back need to understand collisions better first tho
                             }
+
+                            // TODO this needs to happen every frame not just on contact
+                            // contact dmg against enemies
+                            if en_info.take_dmg(10.0) {
+                                //this happens when the enemy is dead
+                                commands.entity(e2).despawn();
+                            }
+                            
                         //scorch projectile collision
                         } else if let Ok(p_info) = e_proj_query.get_mut(e2) {
                             //println!("scorch projectile collision");
