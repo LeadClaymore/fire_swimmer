@@ -39,6 +39,21 @@ pub struct EnemyInfo {
 }
 
 impl EnemyInfo {
+    /// this reduces health by the damage taken and returns if it is at or bellow 0
+    pub fn take_dmg(&mut self, dmg: f32) -> bool {
+        self.health -= dmg;
+        if self.health <= 0.0 {
+            return true;
+        }
+        println!("dmg! ");
+        return false;
+    }
+
+    /// this causes the death effect, currently does not do anything
+    pub fn death_effect(&mut self) {
+        //TODO Nothing for now
+    }
+
     pub fn contact_dmg(&self) -> f32 {
         self.dmg
     }
@@ -85,6 +100,8 @@ impl ProjectileType {
             size: 10.0,
         })
     }
+
+
 
     pub fn get_size(&self) -> f32 {
         match self {
