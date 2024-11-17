@@ -90,7 +90,6 @@ pub fn spawn_ember(
         CollisionGroups::new(
             // G1 is Scorch, G2 is embers, G3 is blocks, G4 is enemies, G5 is enemy_projectiles
             Group::GROUP_2,
-            //TODO Check if only one need filters
             Group::GROUP_1 | Group::GROUP_3 | Group::GROUP_4 | Group::GROUP_5,
         ),
         Restitution::coefficient(0.7),

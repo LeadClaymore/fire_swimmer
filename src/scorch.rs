@@ -193,9 +193,6 @@ fn setup_physics(mut commands: Commands) {
                 a_dash: 0.0,
                 d_dash: 0.0,
             },
-            //TODO idk if I need this after I add the collision groups
-            ActiveEvents::COLLISION_EVENTS,
-            //Friction::coefficient(0.0),
         ));
 }
 
@@ -386,9 +383,7 @@ fn character_movement(
                     println!("double jump!");
                     imp.impulse += Vec2::new(0.0, 30.0 * FORCE_STRENGTH);
                 }
-                //TODO look up if having the checks and times for dashing and double jumping would be better as a resource
             }
-            //TODO for now this allows air strafing and fast falling
             // moving left
             if key_presses.just_pressed(KeyCode::KeyA) && scorch.a_dash_avail(time.elapsed_seconds()){
                 imp.impulse += Vec2::new(-50.0 * FORCE_STRENGTH, 5.0 * FORCE_STRENGTH );
