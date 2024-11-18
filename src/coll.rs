@@ -21,8 +21,6 @@ impl Plugin for CollPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(Update, collision_handling)
-            //.add_systems(Update, collision_event_system)
-            //.add_systems(Update, scorch_collision)
         ;
     }
 }
@@ -30,17 +28,6 @@ impl Plugin for CollPlugin {
 // TODO change the physics of the entier game to mean this does not need to be 100k
 /// a modifier added to impulses to move the charater
 const FORCE_STRENGTH: f32 = 99999.9;
-
-// pub struct GameCollisionGroups;
-// impl GameCollisionGroups {
-//     // these are the collision groups notice, how their bit values do not overlap.
-//     // this is because the collision event is an addition of the other groups it can collide with
-//     pub const GROUP_1: u32 = 0b0000_0000_0000_0001; //Scorch
-//     pub const GROUP_2: u32 = 0b0000_0000_0000_0010; //Embers
-//     pub const GROUP_3: u32 = 0b0000_0000_0000_0100; //Blocks
-//     pub const GROUP_4: u32 = 0b0000_0000_0000_1000; //Enemies
-//     pub const GROUP_5: u32 = 0b0000_0000_0001_0000; //Enemy Projectiles
-// }
 
 #[derive(Component)]
 pub struct DebugComp;
@@ -94,7 +81,7 @@ fn collision_handling(
                             //println!("scorch enemy collision");
                             // this makes scorch take damage //TODO might want to make the enemies take damage too
                             if s_info.damage_flame(en_info.contact_dmg(), time.elapsed_seconds()) {
-                                if let Some(dir) = get_collision_dir(e1, e2, &tf_query) {
+                                if let Some(dir) = get_dir_to(e1, e2, &tf_query) {
                                     entity_knockback(e1, &mut imp_query, dir);
                                     entity_knockback(e2, &mut imp_query, -dir);
                                     //TODO I need some form of movement stun on knockback
@@ -155,7 +142,7 @@ fn collision_handling(
     }
 }
 
-fn get_collision_dir(
+fn get_dir_to(
     e1: Entity,
     e2: Entity,
     tf_query: &Query<&Transform>,
@@ -175,7 +162,7 @@ fn entity_knockback (
 ) {
     if let Ok(mut e_imp) = imp_query.get_mut(ent) {
         e_imp.impulse = direction * 100.0 * FORCE_STRENGTH;
-        println!("Knockback happened");
+        //println!("Knockback happened");
     } else {
         println!("Error with knockback with entiy {:?}", ent);
     }
