@@ -53,6 +53,7 @@ fn collision_handling(
     mut e_proj_query: Query<&mut ProjectileType>,
 
     cg_query: Query<&CollisionGroups>,
+    tf_query: Query<&Transform>,
 ) {
     //TODO I need to implement setting entitys to be despawned at the end of the frame, rather then mid collision.
     // Duplicate collisions cause warnings and might be an issue later
@@ -88,7 +89,11 @@ fn collision_handling(
                             //println!("scorch enemy collision");
                             // this makes scorch take damage //TODO might want to make the enemies take damage too
                             if s_info.damage_flame(en_info.contact_dmg(), time.elapsed_seconds()) {
-                                //TODO add push back need to understand collisions better first tho
+                                if let Some(dir) = get_collision_dir(e1, e2, &tf_query) {
+
+                                } else {
+                                    println!("Error with scorch enemy collision dirrection handling")
+                                }
                             }
 
                             // TODO this needs to happen every frame not just on contact
@@ -140,4 +145,17 @@ fn collision_handling(
             }
         }
     }
+}
+
+fn get_collision_dir(
+    e1: Entity,
+    e2: Entity,
+    tf_query: &Query<&Transform>,
+) -> Option<Vec2> {
+    if let Ok(pos1) = tf_query.get(e1).map(|t1| t1.translation.truncate()) {
+        if let Ok(pos2) = tf_query.get(e2).map(|t2| t2.translation.truncate()) {
+            return Some((pos1 - pos2).normalize());
+        }
+    }
+    None
 }
