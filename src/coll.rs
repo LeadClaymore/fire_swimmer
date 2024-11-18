@@ -27,6 +27,10 @@ impl Plugin for CollPlugin {
     }
 }
 
+// TODO change the physics of the entier game to mean this does not need to be 100k
+/// a modifier added to impulses to move the charater
+const FORCE_STRENGTH: f32 = 99999.9;
+
 // pub struct GameCollisionGroups;
 // impl GameCollisionGroups {
 //     // these are the collision groups notice, how their bit values do not overlap.
@@ -54,6 +58,7 @@ fn collision_handling(
 
     cg_query: Query<&CollisionGroups>,
     tf_query: Query<&Transform>,
+    mut imp_query: Query<&mut ExternalImpulse>,
 ) {
     //TODO I need to implement setting entitys to be despawned at the end of the frame, rather then mid collision.
     // Duplicate collisions cause warnings and might be an issue later
@@ -90,7 +95,10 @@ fn collision_handling(
                             // this makes scorch take damage //TODO might want to make the enemies take damage too
                             if s_info.damage_flame(en_info.contact_dmg(), time.elapsed_seconds()) {
                                 if let Some(dir) = get_collision_dir(e1, e2, &tf_query) {
-
+                                    entity_knockback(e1, &mut imp_query, dir);
+                                    entity_knockback(e2, &mut imp_query, -dir);
+                                    //TODO I need some form of movement stun on knockback
+                                    // bc enemies just keep movin forward
                                 } else {
                                     println!("Error with scorch enemy collision dirrection handling")
                                 }
@@ -158,4 +166,17 @@ fn get_collision_dir(
         }
     }
     None
+}
+
+fn entity_knockback (
+    ent: Entity,
+    imp_query: &mut Query<&mut ExternalImpulse>,
+    direction: Vec2,
+) {
+    if let Ok(mut e_imp) = imp_query.get_mut(ent) {
+        e_imp.impulse = direction * 100.0 * FORCE_STRENGTH;
+        println!("Knockback happened");
+    } else {
+        println!("Error with knockback with entiy {:?}", ent);
+    }
 }

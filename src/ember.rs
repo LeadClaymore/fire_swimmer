@@ -92,6 +92,7 @@ pub fn spawn_ember(
             Group::GROUP_2,
             Group::GROUP_1 | Group::GROUP_3 | Group::GROUP_4 | Group::GROUP_5,
         ),
+        ActiveEvents::COLLISION_EVENTS,
         Restitution::coefficient(0.7),
         TransformBundle::from(Transform::from_xyz(
             pos.0, 

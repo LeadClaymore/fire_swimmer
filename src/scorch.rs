@@ -169,6 +169,7 @@ fn setup_physics(mut commands: Commands) {
                 Group::GROUP_1,
                 Group::GROUP_2 | Group::GROUP_3 | Group::GROUP_4 | Group::GROUP_5,
             ),
+            ActiveEvents::COLLISION_EVENTS,
             Restitution::coefficient(0.1),
             TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)),
             ExternalImpulse::default(),
@@ -380,8 +381,9 @@ fn character_movement(
 
                 // doublejump if possible
                 if key_presses.just_pressed(KeyCode::Space) && scorch.double_jump_avail() {
-                    println!("double jump!");
+                    //println!("double jump!");
                     imp.impulse += Vec2::new(0.0, 30.0 * FORCE_STRENGTH);
+                    //TODO add some VFX on double jump also maybe add a flame cost
                 }
             }
             // moving left

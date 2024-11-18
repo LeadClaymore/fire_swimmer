@@ -216,6 +216,7 @@ pub fn spawn_enemy(
             GravityScale(0.0),
             ColliderMassProperties::Density(1.0),
             LockedAxes::ROTATION_LOCKED,
+            ActiveEvents::COLLISION_EVENTS,
         ));
 }
 
@@ -250,5 +251,6 @@ pub fn ranged_enemy_shoot(
             LockedAxes::ROTATION_LOCKED,
             Velocity::default(),
             GravityScale(0.0),
+            ActiveEvents::COLLISION_EVENTS,
         ));
 }

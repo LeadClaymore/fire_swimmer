@@ -75,6 +75,7 @@ fn spawn_from_json(
                     Group::GROUP_3,
                     Group::GROUP_1 | Group::GROUP_2 | Group::GROUP_4 | Group::GROUP_5,
                 ),
+                ActiveEvents::COLLISION_EVENTS,
             ));
     }
 }
