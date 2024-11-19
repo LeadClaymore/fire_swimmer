@@ -67,7 +67,7 @@ fn spawn_from_json(
 
     for block in data.blocks {
         //TODO I need this to only call once instead of for every block
-        let t_block = asset_server.load("assets/t_block.png");
+        //let t_block = asset_server.load("assets/t_block.png");
 
         commands
             .spawn((
@@ -75,10 +75,11 @@ fn spawn_from_json(
                 TransformBundle::from(Transform::from_xyz(block.pos[0], block.pos[1], 0.0)),
                 block.block_info,
 
-                SpriteBundle {
-                    texture: t_block,
-                    ..Default::default()
-                },
+                // SpriteBundle {
+                //     texture: t_block,
+                //     transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                //     ..Default::default()
+                // },
                 CollisionGroups::new(
                     // G1 is Scorch, G2 is embers, G3 is blocks, G4 is enemies, G5 is enemy_projectiles
                     Group::GROUP_3,

@@ -158,7 +158,12 @@ impl Scorch {
     }
 }
 
-fn setup_physics(mut commands: Commands) {
+fn setup_physics(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    let t_scorch = asset_server.load("assets/t_block.png");
+
     // this is the Scorch
     commands
         .spawn((
@@ -177,6 +182,11 @@ fn setup_physics(mut commands: Commands) {
             GravityScale(0.5),
             ColliderMassProperties::Density(1.0),
             LockedAxes::ROTATION_LOCKED,
+            SpriteBundle {
+                texture: t_scorch,
+                transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                ..Default::default()
+            },
             Damping {
                 linear_damping: 0.1, 
                 angular_damping: 0.0
