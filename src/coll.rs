@@ -84,8 +84,7 @@ fn collision_handling(
                                 if let Some(dir) = get_dir_to(e1, e2, &tf_query) {
                                     entity_knockback(e1, &mut imp_query, dir);
                                     entity_knockback(e2, &mut imp_query, -dir);
-                                    //TODO I need some form of movement stun on knockback
-                                    // bc enemies just keep movin forward
+                                    en_info.stun_until(time.elapsed_seconds() + 5.0);
                                 } else {
                                     println!("Error with scorch enemy collision dirrection handling")
                                 }

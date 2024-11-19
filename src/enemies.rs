@@ -36,6 +36,7 @@ pub struct EnemyInfo {
     pub size: f32,
     pub cooldown: f32,
     pub active_cooldown: f32,
+    pub stunned_until: f32,
 }
 
 impl EnemyInfo {
@@ -72,6 +73,14 @@ impl EnemyInfo {
             return true;
         }
         return false;
+    }
+
+    pub fn is_stunned(self, curr_time: f32) -> bool {
+        !(curr_time > self.stunned_until)
+    }
+
+    pub fn stun_until(&mut self, time_unstunned: f32) {
+        self.stunned_until = time_unstunned;
     }
 }
 
@@ -155,35 +164,37 @@ fn enemy_movement_system(
             e_trans, 
             mut e_info
         ) in enemy_query.iter_mut() {
-            // the direction from the enemy to scorch
-            let dir = (scorch_pos - e_trans.translation.truncate()).normalize();
+            if !e_info.is_stunned(time.elapsed_seconds()) {
+                // the direction from the enemy to scorch
+                let dir = (scorch_pos - e_trans.translation.truncate()).normalize();
 
-            // different enemy types have diffrent movement
-            if e_info.e_type == EnemyType::RunDown {
-                // apply impulse towards scorch times the force str times the speed of an enemy
-                e_imp.impulse += dir * ENEMY_FORCE_STRENGTH * e_info.speed();
-
-            } else if e_info.e_type == EnemyType::Ranged {
-                // if scorch is within range, stop moving
-                if e_info.is_within_range(scorch_pos.distance(e_trans.translation.truncate())) {
-                    e_vel.linvel = Vec2::ZERO;
-                    if e_info.handle_shooting(time.elapsed_seconds()) {
-                        ranged_enemy_shoot( 
-                            &mut commands, 
-                            //TODO I think I need a ofset for spawning
-                            e_trans.translation.truncate() + dir * (e_info.size + 20.0),
-                            dir,
-                            ProjectileType::default(),
-                            //*e_info,
-                        );
-                    }
-
-                // if scorch is outside of range, move to scorch, at the enemies speed * const
-                } else {
+                // different enemy types have diffrent movement
+                if e_info.e_type == EnemyType::RunDown {
+                    // apply impulse towards scorch times the force str times the speed of an enemy
                     e_imp.impulse += dir * ENEMY_FORCE_STRENGTH * e_info.speed();
-                }
-            } else if e_info.e_type == EnemyType::Stationary {
-                // for now nothing, might add turning later
+
+                } else if e_info.e_type == EnemyType::Ranged {
+                    // if scorch is within range, stop moving
+                    if e_info.is_within_range(scorch_pos.distance(e_trans.translation.truncate())) {
+                        e_vel.linvel = Vec2::ZERO;
+                        if e_info.handle_shooting(time.elapsed_seconds()) {
+                            ranged_enemy_shoot( 
+                                &mut commands, 
+                                //TODO I think I need a ofset for spawning
+                                e_trans.translation.truncate() + dir * (e_info.size + 20.0),
+                                dir,
+                                ProjectileType::default(),
+                                //*e_info,
+                            );
+                        }
+
+                    // if scorch is outside of range, move to scorch, at the enemies speed * const
+                    } else {
+                        e_imp.impulse += dir * ENEMY_FORCE_STRENGTH * e_info.speed();
+                    }
+                } else if e_info.e_type == EnemyType::Stationary {
+                    // for now nothing, might add turning later
+                }     
             }
         }
     }
