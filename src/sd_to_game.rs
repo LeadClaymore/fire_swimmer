@@ -46,6 +46,7 @@ struct EnemyData {
 
 fn spawn_from_json(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
 ) {
     // Open the JSON file
     let file = File::open("levels/lv1.json").expect("Cannot open lv1.json");
@@ -62,14 +63,22 @@ fn spawn_from_json(
             enemy.size,
         );
     }
+    
 
     for block in data.blocks {
+        //TODO I need this to only call once instead of for every block
+        let t_block = asset_server.load("assets/t_block.png");
+
         commands
             .spawn((
                 Collider::cuboid(block.size[0], block.size[1]),
                 TransformBundle::from(Transform::from_xyz(block.pos[0], block.pos[1], 0.0)),
                 block.block_info,
 
+                SpriteBundle {
+                    texture: t_block,
+                    ..Default::default()
+                },
                 CollisionGroups::new(
                     // G1 is Scorch, G2 is embers, G3 is blocks, G4 is enemies, G5 is enemy_projectiles
                     Group::GROUP_3,
