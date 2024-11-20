@@ -46,7 +46,7 @@ impl EnemyInfo {
         if self.health <= 0.0 {
             return true;
         }
-        println!("dmg! ");
+        //println!("dmg! ");
         return false;
     }
 

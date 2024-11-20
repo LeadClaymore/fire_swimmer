@@ -78,23 +78,30 @@ fn collision_handling(
                             }
                         //scorch enemy collision
                         } else if let Ok(mut en_info) = enemy_query.get_mut(e2) {
-                            //println!("scorch enemy collision");
+                            println!("scorch enemy collision");
                             // this makes scorch take damage //TODO might want to make the enemies take damage too
                             if s_info.damage_flame(en_info.contact_dmg(), time.elapsed_seconds()) {
-                                if let Some(dir) = get_dir_to(e1, e2, &tf_query) {
-                                    entity_knockback(e1, &mut imp_query, dir);
-                                    entity_knockback(e2, &mut imp_query, -dir);
-                                    en_info.stun_until(time.elapsed_seconds() + 5.0);
-                                } else {
-                                    println!("Error with scorch enemy collision dirrection handling")
-                                }
+                                // this happens when scorch actualy takes dmg aka not i_frames
+                                // moved stuff from here
+                            } else {
+                                println!("I_frame");
                             }
 
                             // TODO this needs to happen every frame not just on contact
                             // contact dmg against enemies
                             if en_info.take_dmg(10.0) {
                                 //this happens when the enemy is dead
+                                en_info.death_effect();
                                 commands.entity(e2).despawn();
+                            } else {
+                                if let Some(dir) = get_dir_to(e1, e2, &tf_query) {
+                                    entity_knockback(e1, &mut imp_query, dir);
+                                    entity_knockback(e2, &mut imp_query, -dir);
+                                    en_info.stun_until(time.elapsed_seconds() + 5.0);
+                                    println!("stunned eneny");
+                                } else {
+                                    println!("Error with scorch enemy collision dirrection handling");
+                                }
                             }
                             
                         //scorch projectile collision
@@ -119,12 +126,13 @@ fn collision_handling(
                             //TODO embers currently deal 10 dmg independent on flame level
                             if en_info.take_dmg(10.0) {
                                 //this happens when the enemy is dead
+                                en_info.death_effect();
                                 commands.entity(e2).despawn();
                             }
                             commands.entity(e1).despawn();
 
                         // ember projectile collision
-                        } else if let Ok(p_info) = e_proj_query.get_mut(e2) {
+                        } else if let Ok(_p_info) = e_proj_query.get_mut(e2) {
                             //println!("ember projectile collision");
                         } else {
                             println!("ERROR: ember unknown collision {:b}, {:b}", e1_bits, e2_bits);

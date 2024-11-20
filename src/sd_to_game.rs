@@ -46,7 +46,7 @@ struct EnemyData {
 
 fn spawn_from_json(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    _asset_server: Res<AssetServer>,
 ) {
     // Open the JSON file
     let file = File::open("levels/lv1.json").expect("Cannot open lv1.json");

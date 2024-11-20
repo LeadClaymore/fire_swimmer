@@ -89,8 +89,10 @@ impl Scorch {
 
     ///Take damage based on the send number
     pub fn damage_flame(&mut self, dmg: f32, curr_time: f32) -> bool {
-        if self.i_frame + self.i_frame_timer > curr_time {
-            //println!("\ndamage taken!");
+        if self.i_frame + self.i_frame_timer < curr_time {
+            self.i_frame_timer = curr_time;
+            println!("damage taken!");
+            
             if dmg < self.curr_flame {
                 self.curr_flame -= dmg;
             } else {
@@ -160,7 +162,7 @@ impl Scorch {
 
 fn setup_physics(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    _asset_server: Res<AssetServer>,
 ) {
     //let t_scorch = asset_server.load("assets/t_block.png");
 
@@ -195,7 +197,7 @@ fn setup_physics(
                 max_flame: 100.0,
                 curr_flame: 100.0,
 
-                i_frame: 5.0,
+                i_frame: 1.0,
                 i_frame_timer: 0.0,
 
                 double_jump: false,
