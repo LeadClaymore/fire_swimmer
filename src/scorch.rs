@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::{na::Translation, prelude::*};
 
 use rand::Rng;
 // use rand::SeedableRng;
@@ -174,7 +174,7 @@ fn setup_physics(
             ),
             ActiveEvents::COLLISION_EVENTS,
             Restitution::coefficient(0.1),
-            TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)),
+            //TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)),
             ExternalImpulse::default(),
             Velocity::default(),
             GravityScale(0.5),
@@ -182,7 +182,14 @@ fn setup_physics(
             LockedAxes::ROTATION_LOCKED,
             SpriteBundle {
                 texture: _asset_server.t_scorch.clone(),
-                //transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(100.0, 100.0)),
+                    ..Default::default()
+                },
+                transform: Transform {
+                    translation: Vec3::new(0.0, 0.0, 0.0),
+                    ..Default::default()
+                },
                 ..Default::default()
             },
             Damping {

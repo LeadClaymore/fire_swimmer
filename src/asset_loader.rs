@@ -26,6 +26,6 @@ pub struct SceneAsset {
 
 fn load_assets(mut scene_assets: ResMut<SceneAsset>, asset_server: Res<AssetServer>) {
     *scene_assets = SceneAsset {
-        t_scorch: asset_server.load("sprites/t_scorch.png"),
+        t_scorch: asset_server.load("sprites/temp.png"),
     }
 }
