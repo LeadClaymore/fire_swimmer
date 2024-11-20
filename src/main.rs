@@ -28,6 +28,9 @@ use sd_to_game::SdPlugin;
 // enemies
 mod enemies;
 use enemies::EnemyPlugin;
+// asset loader
+mod asset_loader;
+use asset_loader::Asset_Loader_Plugin;
 
 fn main() {
     App::new()
@@ -38,6 +41,7 @@ fn main() {
         .add_plugins(FpsOverlayPlugin::default())
     
         // home made plugins
+        .add_plugins(Asset_Loader_Plugin)
         .add_plugins(BlockPlugin)
         .add_plugins(CameraPlugin)
         .add_plugins(ScorchPlugin)

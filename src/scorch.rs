@@ -8,11 +8,7 @@ use bevy::window::PrimaryWindow;
 
 // stuff elsewhere in the project
 use crate::{
-    blocks::BlockInfo, 
-    coll::DebugComp, 
-    //coll::GameCollisionGroups,
-    ember,
-    rng::RngResource,
+    asset_loader::SceneAsset, blocks::BlockInfo, coll::DebugComp, ember, rng::RngResource
 };
 
 impl Plugin for ScorchPlugin {
@@ -91,8 +87,8 @@ impl Scorch {
     pub fn damage_flame(&mut self, dmg: f32, curr_time: f32) -> bool {
         if self.i_frame + self.i_frame_timer < curr_time {
             self.i_frame_timer = curr_time;
-            println!("damage taken!");
-            
+            //println!("damage taken!");
+
             if dmg < self.curr_flame {
                 self.curr_flame -= dmg;
             } else {
@@ -162,7 +158,7 @@ impl Scorch {
 
 fn setup_physics(
     mut commands: Commands,
-    _asset_server: Res<AssetServer>,
+    _asset_server: Res<SceneAsset>,
 ) {
     //let t_scorch = asset_server.load("assets/t_block.png");
 
@@ -184,11 +180,11 @@ fn setup_physics(
             GravityScale(0.5),
             ColliderMassProperties::Density(1.0),
             LockedAxes::ROTATION_LOCKED,
-            // SpriteBundle {
-            //     texture: t_scorch,
-            //     transform: Transform::from_xyz(0.0, 0.0, 0.0),
-            //     ..Default::default()
-            // },
+            SpriteBundle {
+                texture: _asset_server.t_scorch.clone(),
+                //transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                ..Default::default()
+            },
             Damping {
                 linear_damping: 0.1, 
                 angular_damping: 0.0
@@ -344,7 +340,7 @@ fn restart_scorch(
     mut commands: Commands,
     mut s_query: Query<(&mut Scorch, &mut ExternalImpulse, &mut Velocity, &mut Transform)>,
     key_presses: Res<ButtonInput<KeyCode>>,
-    asset_server: Res<AssetServer>, //TODO make functions not need to call this
+    asset_server: Res<SceneAsset>, //TODO make functions not need to call this
 ) {
     // let (s_entity, mut s_compo) = scor_query.single_mut();
     if key_presses.just_pressed(KeyCode::KeyR) {
