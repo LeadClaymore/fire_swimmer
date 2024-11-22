@@ -3,10 +3,12 @@ use bevy_rapier2d::prelude::*;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::BufReader;
+use crate::asset_loader::SceneAsset;
 // external stuff
 // elsewhere in the project
 use crate::blocks::BlockInfo;
 use crate::enemies::{spawn_enemy, EnemyInfo};
+use crate::state_system::AppState;
 
 #[derive(Bundle)]
 pub struct SdBundle {
@@ -18,8 +20,11 @@ pub struct SdPlugin;
 impl Plugin for SdPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(Startup, spawn_from_json)
-            //.add_systems(Startup, spawn_enemies_from_json)
+            //.add_systems(Startup, spawn_from_json)
+            .add_systems(
+                OnEnter(AppState::InGame), 
+                spawn_from_json
+            )
         ;
     }
 }
@@ -46,7 +51,7 @@ struct EnemyData {
 
 fn spawn_from_json(
     mut commands: Commands,
-    _asset_server: Res<AssetServer>,
+    asset_server: Res<SceneAsset>,
 ) {
     // Open the JSON file
     let file = File::open("levels/lv1.json").expect("Cannot open lv1.json");
@@ -66,20 +71,27 @@ fn spawn_from_json(
     
 
     for block in data.blocks {
-        //TODO I need this to only call once instead of for every block
-        //let t_block = asset_server.load("assets/t_block.png");
-
         commands
             .spawn((
-                Collider::cuboid(block.size[0], block.size[1]),
-                TransformBundle::from(Transform::from_xyz(block.pos[0], block.pos[1], 0.0)),
+                SpriteBundle {
+                    texture: asset_server.t_block.clone(),
+                    transform: Transform {
+                        translation: Vec3::new(block.pos[0], block.pos[1], -1.0),
+                        scale: Vec3::new(
+                            block.size[0] / 100.0, 
+                            block.size[1] / 100.0,
+                            1.0
+                        ),
+                        ..Default::default()
+                    },
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(200.0, 200.0)),
+                        ..default()
+                    },
+                    ..Default::default()
+                },
+                Collider::cuboid(100.0, 100.0),
                 block.block_info,
-
-                // SpriteBundle {
-                //     texture: t_block,
-                //     transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                //     ..Default::default()
-                // },
                 CollisionGroups::new(
                     // G1 is Scorch, G2 is embers, G3 is blocks, G4 is enemies, G5 is enemy_projectiles
                     Group::GROUP_3,
