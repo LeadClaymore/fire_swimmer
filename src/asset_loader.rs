@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, transform::commands};
 use bevy_rapier2d::prelude::*;
 
 //use crate::coll::DebugComp;
@@ -14,8 +14,9 @@ impl Plugin for Asset_Loader_Plugin {
     fn build(&self, app: &mut App) {
         app
             .init_resource::<SceneAsset>()
-            //.init_resource::<LoadingAssets>()
-            .add_systems(PreStartup, load_assets)
+            .init_resource::<LoadingAssets>()
+            .add_systems(Update, load_assets)
+            .add_systems(PreStartup, preload_textures)
         ;
     }
 }
@@ -26,28 +27,61 @@ pub struct SceneAsset {
     pub t_block: Handle<Image>,
 }
 
-fn load_assets(mut scene_assets: ResMut<SceneAsset>, asset_server: Res<AssetServer>) {
-    let texture_handles: Vec<Handle<Image>> = vec![
-        asset_server.load("sprites/t_scorch.png"),
-        asset_server.load("sprites/t_block.png"),
-    ];
+fn load_assets(
+    mut commands: Commands,
+    mut scene_assets: ResMut<SceneAsset>,
+    loading_assets: Res<LoadingAssets>,
+    asset_server: Res<AssetServer>,
+) {
+    use bevy::asset::LoadState;
 
-    *scene_assets = SceneAsset {
-        t_scorch: asset_server.load("sprites/t_scorch.png"),
-        t_block: asset_server.load("sprites/t_block.png"),
+    let mut all_loaded = true;
+
+    for handle in &loading_assets.image_handles {
+        match asset_server.get_load_state(handle) {
+            Some(LoadState::Loaded) => continue, // This asset is loaded; check the next one
+            Some(LoadState::Failed(_)) => {
+                eprintln!("Failed to load an asset: {:?}", handle);
+                all_loaded = false;
+                // Exit early since at least one asset failed to load
+                break;
+            }
+            _ => {
+                // Asset is still loading
+                all_loaded = false;
+                break;
+            }
+        }
+    }
+
+    // when all assets are done loading this will trigger. rn it runs every update
+    //TODO change state opon loading all assets
+    if all_loaded {
+        println!("All assets loaded!");
+
+        // I dislike just doing each asset like this from the handles,
+        //TODO make the handle system more scalable and less hard coded
+        scene_assets.t_scorch = loading_assets.image_handles[0].clone_weak();
+        scene_assets.t_block = loading_assets.image_handles[1].clone_weak();
+        
+        // the loading assets is now redundent and less organgized compared to the scene assets
+        commands.remove_resource::<LoadingAssets>();
     }
 }
 
 //I want to store relevent data within a struct elsewhere, however I want to have handles to be sent there here
-// #[derive(Resource, Debug, Default)]
-// struct LoadingAssets {
-//     image_handles: Vec<Handle<Image>>,
-// }
+#[derive(Resource, Debug, Default)]
+struct LoadingAssets {
+    image_handles: Vec<Handle<Image>>,
+}
 
-// fn preload_textures(
-//     mut handle_res: ResMut<LoadingAssets>, 
-//     asset_server: Res<AssetServer>
-// ) {
-    
-//     handle_res.image_handles = texture_handles;
-// }
+fn preload_textures(
+    mut handle_res: ResMut<LoadingAssets>, 
+    asset_server: Res<AssetServer>
+) {
+    let texture_handles: Vec<Handle<Image>> = vec![
+        asset_server.load("sprites/t_scorch.png"),
+        asset_server.load("sprites/t_block.png"),
+    ];
+    handle_res.image_handles = texture_handles;
+}
