@@ -237,6 +237,8 @@ fn propell_scorch(
     rc: Res<RapierContext>,
     // query for blocks with block info for extinguish
     mut bi_query: Query<&mut BlockInfo>,
+    //for spawning embers with the right texture
+    asset_server: Res<SceneAsset>,
 ) {
     // these imputs are used elsewhere so im storing this now
     let (left_click, right_click) = (
@@ -280,6 +282,7 @@ fn propell_scorch(
                     // spawn particle
                     ember::spawn_ember(
                         &mut commands, 
+                        &asset_server,
                         (
                             transform.translation.x - imp_dir.x * 60.0, 
                             transform.translation.y - imp_dir.y * 60.0

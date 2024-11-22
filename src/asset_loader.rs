@@ -24,10 +24,21 @@ impl Plugin for AssetLoaderPlugin {
     }
 }
 
+//I want to store relevent data within a struct elsewhere, however I want to have handles to be sent there here
+#[derive(Resource, Debug, Default)]
+struct LoadingAssets {
+    image_handles: Vec<Handle<Image>>,
+}
+
 #[derive(Resource, Debug, Default)]
 pub struct SceneAsset {
+    pub t_temp: Handle<Image>,
     pub t_scorch: Handle<Image>,
     pub t_block: Handle<Image>,
+    pub t_ember: Handle<Image>,
+    pub t_enemy: Handle<Image>,
+    pub t_enemy_p: Handle<Image>,
+    pub t_enemy2: Handle<Image>,
 }
 
 fn load_assets(
@@ -65,8 +76,14 @@ fn load_assets(
 
         // I dislike just doing each asset like this from the handles,
         //TODO make the handle system more scalable and less hard coded
-        scene_assets.t_scorch = loading_assets.image_handles[0].clone();
-        scene_assets.t_block = loading_assets.image_handles[1].clone();
+        scene_assets.t_temp = loading_assets.image_handles[0].clone();
+        scene_assets.t_scorch = loading_assets.image_handles[1].clone();
+        scene_assets.t_block = loading_assets.image_handles[2].clone();
+        scene_assets.t_ember = loading_assets.image_handles[3].clone();
+        scene_assets.t_enemy = loading_assets.image_handles[4].clone();
+        scene_assets.t_enemy_p = loading_assets.image_handles[5].clone();
+        scene_assets.t_enemy2 = loading_assets.image_handles[6].clone();
+        //scene_assets.t_ = loading_assets.image_handles[7].clone();
         
         // the loading assets is now redundent and less organgized compared to the scene assets
         commands.remove_resource::<LoadingAssets>();
@@ -76,19 +93,19 @@ fn load_assets(
     }
 }
 
-//I want to store relevent data within a struct elsewhere, however I want to have handles to be sent there here
-#[derive(Resource, Debug, Default)]
-struct LoadingAssets {
-    image_handles: Vec<Handle<Image>>,
-}
-
 fn preload_textures(
     mut handle_res: ResMut<LoadingAssets>, 
     asset_server: Res<AssetServer>
 ) {
     let texture_handles: Vec<Handle<Image>> = vec![
+        asset_server.load("sprites/t_temp.png"),
         asset_server.load("sprites/t_scorch.png"),
         asset_server.load("sprites/t_block.png"),
+        asset_server.load("sprites/t_ember.png"),
+        asset_server.load("sprites/t_enemy.png"),
+        asset_server.load("sprites/t_enemy_p.png"),
+        asset_server.load("sprites/t_enemy2.png"),
+        //asset_server.load("sprites/t_.png"),
     ];
     handle_res.image_handles = texture_handles;
 }

@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::coll::DebugComp;
+use crate::state_system::AppState;
+use crate::asset_loader::SceneAsset;
 
 #[derive(Bundle)]
 pub struct EmberBundle {
@@ -17,7 +19,10 @@ impl Plugin for EmberPlugin {
         app
             .insert_resource(EmberTimer(Timer::from_seconds(1.0, TimerMode::Repeating)))
             .add_systems(Update, despawn_particles)
-            //.add_systems(spawn_ember)
+            .add_systems(
+                Update, 
+                (despawn_particles).run_if(in_state(AppState::InGame))
+            )
         ;
     }
 }
@@ -80,11 +85,21 @@ fn despawn_particles (
 
 pub fn spawn_ember(
     commands: &mut Commands,
+    asset_server: &Res<SceneAsset>,
     pos: (f32, f32), 
     imp: Vec2
 ) {
     // spawn particle
     commands.spawn((
+        SpriteBundle {
+            texture: asset_server.t_ember.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(10.0, 10.0)),
+                ..default()
+            },
+            transform: Transform::from_xyz(pos.0, pos.1, -1.0),
+            ..Default::default()
+        },
         EmberComponent::full(),
         RigidBody::Dynamic,
         Collider::ball(5.0),
@@ -95,11 +110,6 @@ pub fn spawn_ember(
         ),
         ActiveEvents::COLLISION_EVENTS,
         Restitution::coefficient(0.7),
-        TransformBundle::from(Transform::from_xyz(
-            pos.0, 
-            pos.1, 
-            1.0
-        )),
         ExternalImpulse {
             impulse: imp,
             torque_impulse: 0.0,
