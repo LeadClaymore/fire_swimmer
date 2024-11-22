@@ -23,6 +23,7 @@ pub struct MainCamera;
 fn start_camera(mut commands: Commands) {
     // this is the default camera
     commands.spawn((
+        // Camera2dBundle::default(),
         Camera2dBundle {
             projection: OrthographicProjection {
                 scale: 2.0,

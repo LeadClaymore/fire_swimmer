@@ -65,8 +65,8 @@ fn load_assets(
 
         // I dislike just doing each asset like this from the handles,
         //TODO make the handle system more scalable and less hard coded
-        scene_assets.t_scorch = loading_assets.image_handles[0].clone_weak();
-        scene_assets.t_block = loading_assets.image_handles[1].clone_weak();
+        scene_assets.t_scorch = loading_assets.image_handles[0].clone();
+        scene_assets.t_block = loading_assets.image_handles[1].clone();
         
         // the loading assets is now redundent and less organgized compared to the scene assets
         commands.remove_resource::<LoadingAssets>();

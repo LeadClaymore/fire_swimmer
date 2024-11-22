@@ -170,7 +170,7 @@ impl Scorch {
 
 fn setup_physics(
     mut commands: Commands,
-    _asset_server: Res<SceneAsset>,
+    asset_server: Res<SceneAsset>,
 ) {
     //let t_scorch = asset_server.load("assets/t_block.png");
 
@@ -193,15 +193,12 @@ fn setup_physics(
             ColliderMassProperties::Density(1.0),
             LockedAxes::ROTATION_LOCKED,
             SpriteBundle {
-                texture: _asset_server.t_scorch.clone(),
+                texture: asset_server.t_scorch.clone(),
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(100.0, 100.0)),
-                    ..Default::default()
+                    ..default()
                 },
-                transform: Transform {
-                    translation: Vec3::new(0.0, 0.0, 0.0),
-                    ..Default::default()
-                },
+                transform: Transform::from_xyz(0.0, 0.0, -1.0),
                 ..Default::default()
             },
             Damping {
@@ -364,8 +361,13 @@ fn restart_scorch(
     // let (s_entity, mut s_compo) = scor_query.single_mut();
     if key_presses.just_pressed(KeyCode::KeyR) {
         // I swear if scorch DNE then this should fail just in case I will leave this, and add the allow
-        if let (mut s_info, mut s_impulse, mut s_velocity, mut s_position) = s_query.single_mut() {
-            s_position.translation = Vec3::new(0.0, 0.0, 0.0);
+        if let (
+            mut s_info, 
+            mut s_impulse, 
+            mut s_velocity, 
+            mut s_position
+        ) = s_query.single_mut() {
+            s_position.translation = Vec3::new(0.0, 0.0, -1.0);
             s_impulse.impulse = Vec2::ZERO;
             s_velocity.linvel = Vec2::ZERO;
             s_info.reset();

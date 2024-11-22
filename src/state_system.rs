@@ -19,7 +19,7 @@ impl Plugin for StateSystemPlugin {
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AppState {
     LoadingScreen,
-    MainMenu,
+    //MainMenu,
     InGame,
 }
 
