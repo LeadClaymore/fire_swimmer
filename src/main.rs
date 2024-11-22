@@ -31,6 +31,9 @@ use enemies::EnemyPlugin;
 // asset loader
 mod asset_loader;
 use asset_loader::Asset_Loader_Plugin;
+// state system
+mod state_system;
+use state_system::State_System_Plugin;
 
 fn main() {
     App::new()
@@ -42,6 +45,7 @@ fn main() {
     
         // home made plugins
         .add_plugins(Asset_Loader_Plugin)
+        .add_plugins(State_System_Plugin)
         .add_plugins(BlockPlugin)
         .add_plugins(CameraPlugin)
         .add_plugins(ScorchPlugin)

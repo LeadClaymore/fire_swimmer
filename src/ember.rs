@@ -22,6 +22,7 @@ impl Plugin for EmberPlugin {
     }
 }
 
+//TODO see if the fixed update would be better for this. IDK what it is
 //TODO tbh I might change this out for a basic timer idk
 /// a resource for calculating when flames should die down
 #[derive(Resource)]
