@@ -1,21 +1,24 @@
-use bevy::{prelude::*, transform::commands};
-use bevy_rapier2d::prelude::*;
+use bevy::prelude::*;
+//use bevy_rapier2d::prelude::*;
 
-//use crate::coll::DebugComp;
+use crate::state_system::AppState;
 
 #[derive(Bundle)]
 pub struct LoaderBundle {
     //tbh IDK if I need this
 }
 
-pub struct Asset_Loader_Plugin;
+pub struct AssetLoaderPlugin;
 
-impl Plugin for Asset_Loader_Plugin {
+impl Plugin for AssetLoaderPlugin {
     fn build(&self, app: &mut App) {
         app
             .init_resource::<SceneAsset>()
             .init_resource::<LoadingAssets>()
-            .add_systems(Update, load_assets)
+            .add_systems(
+                Update, 
+                (load_assets).run_if(in_state(AppState::LoadingScreen))
+            )
             .add_systems(PreStartup, preload_textures)
         ;
     }
@@ -32,6 +35,7 @@ fn load_assets(
     mut scene_assets: ResMut<SceneAsset>,
     loading_assets: Res<LoadingAssets>,
     asset_server: Res<AssetServer>,
+    mut next_state: ResMut<NextState<AppState>>,
 ) {
     use bevy::asset::LoadState;
 
@@ -66,6 +70,9 @@ fn load_assets(
         
         // the loading assets is now redundent and less organgized compared to the scene assets
         commands.remove_resource::<LoadingAssets>();
+
+        //transition the state for next frame
+        next_state.set(AppState::InGame);
     }
 }
 

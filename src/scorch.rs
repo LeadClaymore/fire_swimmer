@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier2d::{na::Translation, prelude::*};
+use bevy_rapier2d::prelude::*;
 
 use rand::Rng;
 // use rand::SeedableRng;
@@ -8,18 +8,30 @@ use bevy::window::PrimaryWindow;
 
 // stuff elsewhere in the project
 use crate::{
-    asset_loader::SceneAsset, blocks::BlockInfo, coll::DebugComp, ember, rng::RngResource
+    asset_loader::SceneAsset, 
+    blocks::BlockInfo, 
+    coll::DebugComp, 
+    ember, 
+    rng::RngResource,
+    state_system::AppState,
 };
 
 impl Plugin for ScorchPlugin {
     fn build(&self, app: &mut App) {
         // graphical and underlying stuff
         app
-            .add_systems(Startup, setup_physics)
-            .add_systems(Update, propell_scorch)
-            .add_systems(Update, character_movement)
-            .add_systems(PostUpdate, restart_scorch)
-            .add_systems(PostUpdate, regen_flame)
+            .add_systems(
+                OnEnter(AppState::InGame), 
+                setup_physics
+            )
+            .add_systems(
+                Update, 
+                (propell_scorch, character_movement).run_if(in_state(AppState::InGame))
+            )
+            .add_systems(
+                PostUpdate, 
+                (restart_scorch, regen_flame).run_if(in_state(AppState::InGame))
+            )
         ;
     }
 }

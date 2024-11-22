@@ -30,10 +30,10 @@ mod enemies;
 use enemies::EnemyPlugin;
 // asset loader
 mod asset_loader;
-use asset_loader::Asset_Loader_Plugin;
+use asset_loader::AssetLoaderPlugin;
 // state system
 mod state_system;
-use state_system::State_System_Plugin;
+use state_system::StateSystemPlugin;
 
 fn main() {
     App::new()
@@ -44,8 +44,8 @@ fn main() {
         .add_plugins(FpsOverlayPlugin::default())
     
         // home made plugins
-        .add_plugins(Asset_Loader_Plugin)
-        .add_plugins(State_System_Plugin)
+        .add_plugins(AssetLoaderPlugin)
+        .add_plugins(StateSystemPlugin)
         .add_plugins(BlockPlugin)
         .add_plugins(CameraPlugin)
         .add_plugins(ScorchPlugin)
