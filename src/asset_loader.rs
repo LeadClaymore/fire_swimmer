@@ -95,12 +95,12 @@ fn load_assets(
 
 fn preload_textures(
     mut handle_res: ResMut<LoadingAssets>, 
-    asset_server: Res<AssetServer>
+    asset_server: Res<AssetServer>,
 ) {
     let texture_handles: Vec<Handle<Image>> = vec![
         asset_server.load("sprites/t_temp.png"),
         asset_server.load("sprites/t_scorch.png"),
-        asset_server.load("sprites/t_block.png"),
+        asset_server.load("sprites/t_wood_brown.png"),
         asset_server.load("sprites/t_ember.png"),
         asset_server.load("sprites/t_enemy.png"),
         asset_server.load("sprites/t_enemy_p.png"),

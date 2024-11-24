@@ -3,7 +3,7 @@ use bevy_rapier2d::prelude::*;
 
 use serde::Deserialize;
 
-use crate::scorch::Scorch;
+use crate::{asset_loader::SceneAsset, scorch::Scorch};
 
 pub struct EnemyPlugin;
 
@@ -200,17 +200,36 @@ fn enemy_movement_system(
     }
 }
 
+#[allow(dead_code, unreachable_patterns)]
 /// spawns an enemy on the location specified, with the info specified,
 pub fn spawn_enemy(
     commands: &mut Commands,
     e_pos: Vec2,
     e_info: EnemyInfo,
     e_size: f32,
+    asset_server: &Res<SceneAsset>,
 ) {
+    // this sets the texture based on what the enemy is
+    let t_texture = match e_info.e_type {
+        EnemyType::RunDown => asset_server.t_enemy.clone(),
+        EnemyType::Ranged => asset_server.t_enemy2.clone(),
+        EnemyType::Stationary => asset_server.t_temp.clone(),
+        _ => asset_server.t_temp.clone(),
+    };
+
     commands
         .spawn((
+            SpriteBundle {
+                texture: t_texture,
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(e_size * 2.0, e_size * 2.0)),
+                    ..default()
+                },
+                transform: Transform::from_xyz(e_pos.x, e_pos.y, -1.0),
+                ..Default::default()
+            },
             // position and enemy info
-            TransformBundle::from(Transform::from_xyz(e_pos.x, e_pos.y, 0.0)),
+            //TransformBundle::from(Transform::from_xyz(e_pos.x, e_pos.y, 0.0)),
             Collider::ball(e_size),
             e_info,
 

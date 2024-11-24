@@ -58,7 +58,7 @@ fn spawn_from_json(
     let reader = BufReader::new(file);
 
     // Deserialize the JSON into a Vec<BlockData>
-    let data: LevelData = serde_json::from_reader(reader).expect("Error parsing lv1.json");
+    let data: LevelData = serde_json::from_reader(reader).expect("Error parsing lv1.json");    
 
     for enemy in data.enemies {
         spawn_enemy(
@@ -66,10 +66,10 @@ fn spawn_from_json(
             Vec2::from(enemy.pos),
             enemy.e_info,
             enemy.size,
+            &asset_server,
         );
     }
     
-
     for block in data.blocks {
         commands
             .spawn((
