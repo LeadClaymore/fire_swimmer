@@ -151,6 +151,7 @@ fn enemy_movement_system(
     mut commands: Commands,
     mut enemy_query: Query<(&mut Velocity, &mut ExternalImpulse, &Transform, &mut EnemyInfo)>,
     scorch_query: Query<&Transform, With<Scorch>>,
+    asset_server: Res<SceneAsset>,
 ) {
     // takes the transform from scorch, and maps the 2d + z space into a 2d space
     if let Ok(scorch_pos) = scorch_query.get_single()
@@ -185,6 +186,7 @@ fn enemy_movement_system(
                                 dir,
                                 ProjectileType::default(),
                                 //*e_info,
+                                &asset_server,
                             );
                         }
 
@@ -250,6 +252,7 @@ pub fn spawn_enemy(
         ));
 }
 
+#[allow(dead_code, unreachable_patterns)]
 /// spawns an projectile 
 pub fn ranged_enemy_shoot(
     commands: &mut Commands,
@@ -257,12 +260,28 @@ pub fn ranged_enemy_shoot(
     p_dir: Vec2,
     p_type: ProjectileType,
     //e_type: EnemyInfo,
+    asset_server: &Res<SceneAsset>,
 ) {
+    //TODO add other types of projectiles so I can change what they look like
+    let t_texture = match p_type {
+        ProjectileType::Contact(_) => asset_server.t_enemy.clone(),
+        _ => asset_server.t_temp.clone(),
+    };
+
     //println!("shoot");
     commands
         .spawn((
+            SpriteBundle {
+                texture: t_texture,
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(p_type.get_size() * 2.0, p_type.get_size() * 2.0)),
+                    ..default()
+                },
+                transform: Transform::from_xyz(p_pos.x, p_pos.y, -1.0),
+                ..Default::default()
+            },
             // from data provided
-            TransformBundle::from(Transform::from_xyz(p_pos.x, p_pos.y, 0.0)),
+            //TransformBundle::from(Transform::from_xyz(p_pos.x, p_pos.y, 0.0)),
             Collider::ball(p_type.get_size()),
             CollisionGroups::new(
                 // G1 is Scorch, G2 is embers, G3 is blocks, G4 is enemies, G5 is enemy_projectiles
