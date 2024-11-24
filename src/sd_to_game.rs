@@ -6,7 +6,7 @@ use std::io::BufReader;
 use crate::asset_loader::SceneAsset;
 // external stuff
 // elsewhere in the project
-use crate::blocks::BlockInfo;
+use crate::blocks::{BlockInfo, BlockTexture};
 use crate::enemies::{spawn_enemy, EnemyInfo};
 use crate::state_system::AppState;
 
@@ -49,6 +49,7 @@ struct EnemyData {
     e_info: EnemyInfo,
 }
 
+#[allow(dead_code, unreachable_patterns)]
 fn spawn_from_json(
     mut commands: Commands,
     asset_server: Res<SceneAsset>,
@@ -69,12 +70,20 @@ fn spawn_from_json(
             &asset_server,
         );
     }
-    
+
     for block in data.blocks {
+        // load the texture based on what block it is
+        let b_texture = match block.block_info.texture {
+            BlockTexture::Stone =>  asset_server.t_block_unburnable.clone(),
+            BlockTexture::Wood =>   asset_server.t_block.clone(),
+            BlockTexture::Paper =>  asset_server.t_block_insta_burn.clone(),
+            _ =>                    asset_server.t_temp.clone(),
+        };
+
         commands
             .spawn((
                 SpriteBundle {
-                    texture: asset_server.t_block.clone(),
+                    texture: b_texture,
                     transform: Transform {
                         translation: Vec3::new(block.pos[0], block.pos[1], -1.0),
                         scale: Vec3::new(

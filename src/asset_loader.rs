@@ -39,6 +39,8 @@ pub struct SceneAsset {
     pub t_enemy: Handle<Image>,
     pub t_enemy_p: Handle<Image>,
     pub t_enemy2: Handle<Image>,
+    pub t_block_unburnable: Handle<Image>,
+    pub t_block_insta_burn: Handle<Image>,
 }
 
 fn load_assets(
@@ -78,11 +80,13 @@ fn load_assets(
         //TODO make the handle system more scalable and less hard coded
         scene_assets.t_temp = loading_assets.image_handles[0].clone();
         scene_assets.t_scorch = loading_assets.image_handles[1].clone();
-        scene_assets.t_block = loading_assets.image_handles[2].clone();
-        scene_assets.t_ember = loading_assets.image_handles[3].clone();
-        scene_assets.t_enemy = loading_assets.image_handles[4].clone();
-        scene_assets.t_enemy_p = loading_assets.image_handles[5].clone();
-        scene_assets.t_enemy2 = loading_assets.image_handles[6].clone();
+        scene_assets.t_ember = loading_assets.image_handles[2].clone();
+        scene_assets.t_block = loading_assets.image_handles[3].clone();
+        scene_assets.t_block_unburnable = loading_assets.image_handles[4].clone();
+        scene_assets.t_block_insta_burn = loading_assets.image_handles[5].clone();
+        scene_assets.t_enemy = loading_assets.image_handles[6].clone();
+        scene_assets.t_enemy_p = loading_assets.image_handles[7].clone();
+        scene_assets.t_enemy2 = loading_assets.image_handles[8].clone();
         //scene_assets.t_ = loading_assets.image_handles[7].clone();
         
         // the loading assets is now redundent and less organgized compared to the scene assets
@@ -100,8 +104,10 @@ fn preload_textures(
     let texture_handles: Vec<Handle<Image>> = vec![
         asset_server.load("sprites/t_temp.png"),
         asset_server.load("sprites/t_scorch.png"),
-        asset_server.load("sprites/t_wood_brown.png"),
         asset_server.load("sprites/t_ember.png"),
+        asset_server.load("sprites/t_wood_brown.png"),
+        asset_server.load("sprites/t_slate.png"),
+        asset_server.load("sprites/t_paper.png"),
         asset_server.load("sprites/t_enemy.png"),
         asset_server.load("sprites/t_enemy_p.png"),
         asset_server.load("sprites/t_enemy2.png"),

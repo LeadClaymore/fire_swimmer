@@ -35,6 +35,7 @@ pub struct BlockInfo {
     // /// size of the block
     // pub size:           Vec2,
     //TODO slants, movable, explosive
+    pub texture:        BlockTexture,
 }
 
 impl BlockInfo {
@@ -44,15 +45,17 @@ impl BlockInfo {
             burnable:       true,
             extinguishable: true,
             burn_time:      (10.0, 0.0),
+            texture:        BlockTexture::Stone,
         }
     }
     
     #[allow(dead_code)]
-    pub fn new(burn: bool, exti: bool, btime: f32) -> BlockInfo {
+    pub fn new(burn: bool, exti: bool, btime: f32, text: BlockTexture) -> BlockInfo {
         BlockInfo {
             burnable:       burn,
             extinguishable: exti,
             burn_time:      (btime, 0.0),
+            texture:        text,
         }
     }
     
@@ -61,6 +64,13 @@ impl BlockInfo {
             self.burn_time.1 = start_time;
         }
     }
+}
+
+#[derive(Component, Debug, Clone, Copy, Deserialize)]
+pub enum BlockTexture {
+    Stone,
+    Wood,
+    Paper,
 }
 
 fn block_burning_system (

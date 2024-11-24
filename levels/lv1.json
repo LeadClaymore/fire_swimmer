@@ -6,7 +6,8 @@
             "block_info": {
                 "burnable": false,
                 "extinguishable": false,
-                "burn_time": [0.1, 0.0]
+                "burn_time": [0.1, 0.0],
+                "texture": "Stone"
             }
         },
         {
@@ -15,7 +16,8 @@
             "block_info": {
                 "burnable": false,
                 "extinguishable": false,
-                "burn_time": [10.0, 0.0]
+                "burn_time": [10.0, 0.0],
+                "texture": "Stone"
             }
         },
         {
@@ -24,7 +26,8 @@
             "block_info": {
                 "burnable": false,
                 "extinguishable": false,
-                "burn_time": [0.1, 0.0]
+                "burn_time": [0.1, 0.0],
+                "texture": "Stone"
             }
         },
         {
@@ -33,7 +36,8 @@
             "block_info": {
                 "burnable": false,
                 "extinguishable": false,
-                "burn_time": [0.1, 0.0]
+                "burn_time": [0.1, 0.0],
+                "texture": "Stone"
             }
         },
         {
@@ -42,7 +46,8 @@
             "block_info": {
                 "burnable": false,
                 "extinguishable": false,
-                "burn_time": [10.0, 0.0]
+                "burn_time": [10.0, 0.0],
+                "texture": "Stone"
             }
         },
         {
@@ -51,7 +56,8 @@
             "block_info": {
                 "burnable": false,
                 "extinguishable": false,
-                "burn_time": [0.1, 0.0]
+                "burn_time": [0.1, 0.0],
+                "texture": "Stone"
             }
         },
         {
@@ -60,7 +66,8 @@
             "block_info": {
                 "burnable": false,
                 "extinguishable": false,
-                "burn_time": [0.1, 0.0]
+                "burn_time": [0.1, 0.0],
+                "texture": "Stone"
             }
         },
         {
@@ -69,7 +76,8 @@
             "block_info": {
                 "burnable": true,
                 "extinguishable": true,
-                "burn_time": [0.1, 0.0]
+                "burn_time": [0.1, 0.0],
+                "texture": "Paper"
             }
         },
         {
@@ -78,7 +86,8 @@
             "block_info": {
                 "burnable": false,
                 "extinguishable": false,
-                "burn_time": [0.1, 0.0]
+                "burn_time": [0.1, 0.0],
+                "texture": "Stone"
             }
         }
     ],
