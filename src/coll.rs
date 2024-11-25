@@ -165,8 +165,24 @@ fn collision_handling(
                     println!("Error in getting collision group from entity for collision");
                 }
             }
-            CollisionEvent::Stopped(_, _, _) => {
+            CollisionEvent::Stopped(e1, e2, _) => {
                 //currently unused, If I wanted to do something when something stops colliding it would be here
+                if let (Ok(e1_bits), Ok(e2_bits)) = (
+                    cg_query.get(*e1).map(|cg| cg.memberships.bits()), 
+                    cg_query.get(*e2).map(|cg| cg.memberships.bits())
+                ) {
+                    // this orders e1 and e2 by the bits in their collision group (lower bits first)
+                    //TODO if I start adding entities with more then 1 group membership see if this still works
+                    let (e1, e2) = if e1_bits >= e2_bits { (*e2, *e1) } else { (*e1, *e2) };
+                    
+                    // if e1 is scorch
+                    if let Ok(mut s_info) = scorch_query.get_mut(e1) {
+                        //println!("collisions are ending with scorch");
+                        if let Ok(mut en_info) = enemy_query.get_mut(e2) {
+                            println!("scorch enemey collision ended");
+                        }
+                    }
+                }
             }
         }
     }
