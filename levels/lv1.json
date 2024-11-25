@@ -104,7 +104,8 @@
                 "size": 25.0,
                 "cooldown": 0.0,
                 "active_cooldown": 0.0,
-                "stunned_until": 0.0
+                "stunned_until": 0.0,
+                "within_range": false
             }
         },
         {
@@ -119,7 +120,8 @@
                 "size": 25.0,
                 "cooldown": 1.0,
                 "active_cooldown": 0.0,
-                "stunned_until": 0.0
+                "stunned_until": 0.0,
+                "within_range": false
             }
         }
     ]

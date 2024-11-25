@@ -218,7 +218,26 @@ fn setup_physics(
                 a_dash: 0.0,
                 d_dash: 0.0,
             },
-        ));
+        ))
+        .with_children(|parent| {
+            // Add the sensor collider as a child
+            parent
+                .spawn( (
+                    
+                    Collider::ball(500.0),
+                    Sensor,
+                    CollisionGroups::new(
+                        //TODO for now it collides with nothing
+                        // G30 is going to be debug objects
+                        Group::GROUP_30,
+                        Group::NONE
+                    ),
+                    ColliderMassProperties::Mass(0.0),
+                    TransformBundle::default(), // Ensure it follows the parent
+                ));
+                
+        })
+        ;
 }
 
 // this handles impulse forces on Scorch

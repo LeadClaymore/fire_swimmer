@@ -40,6 +40,7 @@ pub struct EnemyInfo {
     pub cooldown: f32,
     pub active_cooldown: f32,
     pub stunned_until: f32,
+    pub within_range: bool,
 }
 
 impl EnemyInfo {
