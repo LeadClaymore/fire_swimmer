@@ -105,7 +105,8 @@
                 "cooldown": 0.0,
                 "active_cooldown": 0.0,
                 "stunned_until": 0.0,
-                "within_range": false
+                "within_range": false,
+                "damage_per_frame": 0.0
             }
         },
         {
@@ -121,7 +122,8 @@
                 "cooldown": 1.0,
                 "active_cooldown": 0.0,
                 "stunned_until": 0.0,
-                "within_range": false
+                "within_range": false,
+                "damage_per_frame": 0.0
             }
         }
     ]

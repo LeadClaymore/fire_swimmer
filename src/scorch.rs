@@ -84,6 +84,8 @@ pub struct Scorch {
     /// When d was last pressed
     pub d_dash: f32,
 
+    pub damage_per_frame: f32,
+
     // pub unlocked_dash: bool,
     // pub unlocked_air_dash: bool,
 }
@@ -166,6 +168,22 @@ impl Scorch {
         }
         return false;
     }
+
+    pub fn get_dpf(&self) -> f32 {
+        self.damage_per_frame
+    }
+
+    pub fn add_dpf(&mut self, added_dpf: f32) {
+        if self.damage_per_frame + added_dpf > 0.0 {
+            self.damage_per_frame += added_dpf;
+        } else {
+            self.clear_dpf();
+        }
+    }
+
+    pub fn clear_dpf(&mut self) {
+        self.damage_per_frame = 0.0;
+    }
 }
 
 
@@ -222,6 +240,8 @@ fn setup_physics(
                 dash: (false, 0.0),
                 a_dash: 0.0,
                 d_dash: 0.0,
+
+                damage_per_frame: 0.0,
             },
         ))
         .with_children(|parent| {

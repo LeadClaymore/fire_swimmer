@@ -87,6 +87,10 @@ fn collision_handling(
                                 println!("I_frame");
                             }
 
+                            // this starts dpf, I need to see if .05 is too much or little
+                            en_info.add_dpf(0.05);
+                            s_info.add_dpf(0.05);
+
                             // TODO this needs to happen every frame not just on contact
                             // contact dmg against enemies
                             if en_info.take_dmg(10.0) {
@@ -180,6 +184,9 @@ fn collision_handling(
                         //println!("collisions are ending with scorch");
                         if let Ok(mut en_info) = enemy_query.get_mut(e2) {
                             println!("scorch enemey collision ended");
+                            // this starts dpf, I need to see if .05 is too much or little
+                            en_info.add_dpf(-0.05);
+                            s_info.add_dpf(-0.05);
                         }
                     }
                 }

@@ -41,6 +41,7 @@ pub struct EnemyInfo {
     pub active_cooldown: f32,
     pub stunned_until: f32,
     pub within_range: bool,
+    pub damage_per_frame: f32,
 }
 
 impl EnemyInfo {
@@ -94,6 +95,22 @@ impl EnemyInfo {
 
     pub fn is_active(&self) -> bool {
         self.within_range
+    }
+
+    pub fn get_dpf(&self) -> f32 {
+        self.damage_per_frame
+    }
+
+    pub fn add_dpf(&mut self, added_dmg: f32) {
+        if added_dmg + self.damage_per_frame > 0.0 {
+            self.damage_per_frame += added_dmg;
+        } else {
+            self.clear_dpf();
+        }
+    }
+
+    pub fn clear_dpf(&mut self) {
+        self.damage_per_frame = 0.0;
     }
 }
 
