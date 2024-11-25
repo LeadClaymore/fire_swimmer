@@ -58,7 +58,7 @@ const DASH_COOLDOWN: f32 = 1.0;
 /// How long between presses would make a dash or something else
 const DOUBLE_TAP_COOLDOWN: f32 = 0.2;
 
-#[derive(Component)]
+#[derive(Component, Clone, Copy, PartialEq)]
 #[allow(dead_code)]
 pub struct Scorch {
     /// max life for scorch
@@ -168,6 +168,11 @@ impl Scorch {
     }
 }
 
+
+#[derive(Component, Clone, Copy, PartialEq)]
+#[allow(dead_code)]
+pub struct DetectRange;
+
 fn setup_physics(
     mut commands: Commands,
     asset_server: Res<SceneAsset>,
@@ -223,15 +228,16 @@ fn setup_physics(
             // Add the sensor collider as a child
             parent
                 .spawn( (
-                    
+                    DetectRange, //This is for collisions to determin if they should be in range
                     Collider::ball(500.0),
                     Sensor,
                     CollisionGroups::new(
                         //TODO for now it collides with nothing
                         // G30 is going to be debug objects
-                        Group::GROUP_30,
-                        Group::NONE
+                        Group::GROUP_1,
+                        Group::GROUP_4
                     ),
+                    ActiveEvents::COLLISION_EVENTS,
                     ColliderMassProperties::Mass(0.0),
                     TransformBundle::default(), // Ensure it follows the parent
                 ));

@@ -3,12 +3,7 @@ use bevy_rapier2d::prelude::*;
 
 // elsewhere in the project
 use crate::{
-    blocks::BlockInfo, 
-    ember::EmberComponent, 
-    scorch::Scorch,
-    enemies::EnemyInfo,
-    enemies::ProjectileType,
-    state_system::AppState,
+    blocks::BlockInfo, ember::EmberComponent, enemies::{EnemyInfo, ProjectileType}, scorch::{DetectRange, Scorch}, state_system::AppState
 };
 
 #[derive(Bundle)]
@@ -46,6 +41,7 @@ fn collision_handling(
     mut block_query: Query<&mut BlockInfo>,
     mut enemy_query: Query<&mut EnemyInfo>,
     mut e_proj_query: Query<&mut ProjectileType>,
+    detect_query: Query<&DetectRange>,
 
     cg_query: Query<&CollisionGroups>,
     tf_query: Query<&Transform>,
@@ -153,6 +149,16 @@ fn collision_handling(
                             commands.entity(e2).despawn();
                         } else {
                             println!("ERROR: block unknown collision {:b}, {:b}", e1_bits, e2_bits);
+                        }
+                    // if e1 is a block
+                    } else if detect_query.get(e1).is_ok() {
+                        //println!("collisions are happening with block");
+                        // detection_range enemy collision
+                        if let Ok(mut en_info) = enemy_query.get_mut(e2) {
+                            //println!("detection_range enemy collision");
+                            en_info.set_active();
+                        } else {
+                            println!("ERROR: detect_range unknown collision {:b}, {:b}", e1_bits, e2_bits);
                         }
                     }
                 } else {

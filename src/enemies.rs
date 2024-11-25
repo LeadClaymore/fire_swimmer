@@ -86,6 +86,11 @@ impl EnemyInfo {
     pub fn stun_until(&mut self, time_unstunned: f32) {
         self.stunned_until = time_unstunned;
     }
+
+    pub fn set_active(&mut self) {
+        println!("enemy in range");
+        self.within_range = true;
+    }
 }
 
 /// the type of enemy
