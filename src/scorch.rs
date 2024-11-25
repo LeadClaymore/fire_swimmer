@@ -229,7 +229,7 @@ fn setup_physics(
             parent
                 .spawn( (
                     DetectRange, //This is for collisions to determin if they should be in range
-                    Collider::ball(500.0),
+                    Collider::ball(1000.0),
                     Sensor,
                     CollisionGroups::new(
                         //TODO for now it collides with nothing

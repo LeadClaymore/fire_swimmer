@@ -91,6 +91,10 @@ impl EnemyInfo {
         println!("enemy in range");
         self.within_range = true;
     }
+
+    pub fn is_active(&self) -> bool {
+        self.within_range
+    }
 }
 
 /// the type of enemy
@@ -174,7 +178,10 @@ fn enemy_movement_system(
             e_trans, 
             mut e_info
         ) in enemy_query.iter_mut() {
-            if !e_info.is_stunned(time.elapsed_seconds()) {
+            // I dislike the inefficentcy in this.
+            // Its fine for now but if I want more enemies this will be a problem
+            //TODO reduce load by culling calls for inactive enemies
+            if !e_info.is_stunned(time.elapsed_seconds()) && e_info.is_active() {
                 // the direction from the enemy to scorch
                 let dir = (scorch_pos - e_trans.translation.truncate()).normalize();
 
