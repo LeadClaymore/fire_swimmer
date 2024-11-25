@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 use serde::Deserialize;
 
+use crate::state_system::AppState;
 pub struct BlockPlugin;
 
 #[derive(Bundle)]
@@ -14,7 +15,10 @@ pub struct BlockBundle {
 impl Plugin for BlockPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(Update, block_burning_system)
+            .add_systems(
+                PostUpdate, 
+                (block_burning_system).run_if(in_state(AppState::InGame))
+            )
         ;
     }
 }

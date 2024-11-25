@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 //use bevy_rapier2d::prelude::*;
 
+use crate::{state_system::AppState, Scorch};
+
 pub struct CameraPlugin;
 
 #[derive(Bundle)]
@@ -12,8 +14,12 @@ impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         // graphical and underlying stuff
         app
-            .add_systems(Startup, start_camera)
-            .add_systems(Update, camera_control);
+            .add_systems(OnEnter(AppState::InGame), start_camera)
+            .add_systems(
+                Update, 
+                (camera_control).run_if(in_state(AppState::InGame))
+            )
+        ;
     }
 }
 
@@ -35,7 +41,6 @@ fn start_camera(mut commands: Commands) {
     ));
 }
 
-use crate::Scorch;
 
 // camera will follow the x axis of the Scorch
 fn camera_control(

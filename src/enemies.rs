@@ -3,7 +3,7 @@ use bevy_rapier2d::prelude::*;
 
 use serde::Deserialize;
 
-use crate::{asset_loader::SceneAsset, scorch::Scorch};
+use crate::{asset_loader::SceneAsset, scorch::Scorch, state_system::AppState};
 
 pub struct EnemyPlugin;
 
@@ -18,7 +18,10 @@ pub struct EnemyBundle {
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(Update, enemy_movement_system)
+            .add_systems(
+                Update, 
+                (enemy_movement_system).run_if(in_state(AppState::InGame))
+            )
             //.add_systems(Startup, setup_test_enemy)
         ;
     }

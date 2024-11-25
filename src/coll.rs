@@ -8,6 +8,7 @@ use crate::{
     scorch::Scorch,
     enemies::EnemyInfo,
     enemies::ProjectileType,
+    state_system::AppState,
 };
 
 #[derive(Bundle)]
@@ -20,7 +21,10 @@ pub struct CollPlugin;
 impl Plugin for CollPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(Update, collision_handling)
+            .add_systems(
+                Update, 
+                (collision_handling).run_if(in_state(AppState::InGame))
+            )
         ;
     }
 }
