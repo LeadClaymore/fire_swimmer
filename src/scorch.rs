@@ -30,7 +30,7 @@ impl Plugin for ScorchPlugin {
             )
             .add_systems(
                 PostUpdate, 
-                (restart_scorch, regen_flame).run_if(in_state(AppState::InGame))
+                (restart_scorch, per_frame_flame_change).run_if(in_state(AppState::InGame))
             )
         ;
     }
@@ -90,6 +90,7 @@ pub struct Scorch {
     // pub unlocked_air_dash: bool,
 }
 
+#[allow(dead_code)]
 impl Scorch {
     pub fn regen_flame(&mut self) {
         if self.max_flame > self.curr_flame {
@@ -112,6 +113,14 @@ impl Scorch {
         } else {
             //print!("blocked");
             return false;
+        }
+    }
+
+    pub fn unblockable_dmg(&mut self, dmg: f32) {
+        if dmg < self.curr_flame {
+            self.curr_flame -= dmg;
+        } else {
+            self.curr_flame = 0.0;
         }
     }
 
@@ -183,6 +192,15 @@ impl Scorch {
 
     pub fn clear_dpf(&mut self) {
         self.damage_per_frame = 0.0;
+    }
+
+    pub fn has_flame(&self, change: f32) -> bool {
+        self.curr_flame > change
+    }
+
+    // this is due to imutable calls to mutable scorch_infos
+    pub fn apply_dpf(&mut self) {
+        self.unblockable_dmg(self.damage_per_frame);
     }
 }
 
@@ -463,7 +481,11 @@ fn character_movement(
                 //falling
 
                 // doublejump if possible
-                if key_presses.just_pressed(KeyCode::Space) && scorch.double_jump_avail() {
+                if 
+                    key_presses.just_pressed(KeyCode::Space) 
+                    && scorch.double_jump_avail() 
+                    && scorch.has_flame(10.0) 
+                {
                     //println!("double jump!");
                     imp.impulse += Vec2::new(0.0, 30.0 * FORCE_STRENGTH);
                     //TODO add some VFX on double jump also maybe add a flame cost
@@ -484,10 +506,17 @@ fn character_movement(
                                 ) * FORCE_STRENGTH
                         );
                     }
+
+                    // doublejumping costs flame
+                    scorch.unblockable_dmg(10.0);
                 }
             }
             // moving left
-            if key_presses.just_pressed(KeyCode::KeyA) && scorch.a_dash_avail(time.elapsed_seconds()){
+            if 
+                key_presses.just_pressed(KeyCode::KeyA) 
+                && scorch.a_dash_avail(time.elapsed_seconds())
+                && scorch.has_flame(10.0) 
+            {
                 imp.impulse += Vec2::new(-50.0 * FORCE_STRENGTH, 5.0 * FORCE_STRENGTH );
                 velo.linvel.y = 0.0;
                 // spawn ember particles
@@ -507,11 +536,18 @@ fn character_movement(
                             ) * FORCE_STRENGTH
                     );
                 }
+
+                // dashing costs flame
+                scorch.unblockable_dmg(10.0);
             } else if key_presses.pressed(KeyCode::KeyA) {
                 velo.linvel += Vec2::new(-2.0, 0.0);
             }
 
-            if key_presses.just_pressed(KeyCode::KeyD) && scorch.d_dash_avail(time.elapsed_seconds()){
+            if 
+                key_presses.just_pressed(KeyCode::KeyD) 
+                && scorch.d_dash_avail(time.elapsed_seconds())
+                && scorch.has_flame(10.0) 
+            {
                 imp.impulse += Vec2::new(50.0 * FORCE_STRENGTH, 5.0 * FORCE_STRENGTH );
                 velo.linvel.y = 0.0;
                 // spawn ember particles
@@ -531,6 +567,9 @@ fn character_movement(
                             ) * FORCE_STRENGTH
                     );
                 }
+
+                // dashing costs flame
+                scorch.unblockable_dmg(10.0);
             } else if key_presses.pressed(KeyCode::KeyD) {
                 velo.linvel += Vec2::new(2.0, 0.0);
             }
@@ -543,11 +582,17 @@ fn character_movement(
     }
 }
 
-fn regen_flame (
-    mut query: Query<&mut Scorch>,
+// this applies flame regen and causes damage per second
+fn per_frame_flame_change (
+    mut s_query: Query<&mut Scorch>,
 ) {
-    for mut scorch in query.iter_mut() {
-        scorch.regen_flame();
+    if let Ok(mut s_info) = s_query.get_single_mut() {
+        s_info.regen_flame();
+        if s_info.has_flame(s_info.get_dpf()) {
+            s_info.apply_dpf();
+        } else {
+            //TODO Scorch death effects (dpf)
+        }
     }
 }
 // end
