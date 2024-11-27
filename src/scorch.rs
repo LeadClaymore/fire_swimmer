@@ -467,19 +467,46 @@ fn character_movement(
                     //println!("double jump!");
                     imp.impulse += Vec2::new(0.0, 30.0 * FORCE_STRENGTH);
                     //TODO add some VFX on double jump also maybe add a flame cost
-                    // spawn particle
-                    ember::spawn_ember(
-                        &mut commands, 
-                        &asset_server,
-                        pos.translation.truncate() + Vec2::new(0.0, -1.0) * 60.0,
-                        Vec2::new(0.0, -1.0,) * rng.rng.gen_range(-0.5..0.5) * FORCE_STRENGTH
-                    );
+                    // spawn ember particle
+                    for _ in 0..10 {
+                        ember::spawn_ember(
+                            &mut commands, 
+                            &asset_server,
+                            pos.translation.truncate() + 
+                                Vec2::new(
+                                    rng.rng.gen_range(0.0..0.1), 
+                                    -1.0
+                                ) * 60.0,
+                            Vec2::new(0.0, -1.0,) 
+                                + Vec2::new(
+                                    rng.rng.gen_range(-0.5..0.5), 
+                                    rng.rng.gen_range(-0.5..0.5)
+                                ) * FORCE_STRENGTH
+                        );
+                    }
                 }
             }
             // moving left
             if key_presses.just_pressed(KeyCode::KeyA) && scorch.a_dash_avail(time.elapsed_seconds()){
                 imp.impulse += Vec2::new(-50.0 * FORCE_STRENGTH, 5.0 * FORCE_STRENGTH );
                 velo.linvel.y = 0.0;
+                // spawn ember particles
+                for _ in 0..10 {
+                    ember::spawn_ember(
+                        &mut commands, 
+                        &asset_server,
+                        pos.translation.truncate() + 
+                            Vec2::new(
+                                1.0, 
+                                rng.rng.gen_range(0.0..0.1)
+                            ) * 60.0,
+                        Vec2::new(1.0, 0.0,) 
+                            + Vec2::new(
+                                rng.rng.gen_range(-0.5..0.5), 
+                                rng.rng.gen_range(-0.5..0.5)
+                            ) * FORCE_STRENGTH
+                    );
+                }
             } else if key_presses.pressed(KeyCode::KeyA) {
                 velo.linvel += Vec2::new(-2.0, 0.0);
             }
@@ -487,6 +514,23 @@ fn character_movement(
             if key_presses.just_pressed(KeyCode::KeyD) && scorch.d_dash_avail(time.elapsed_seconds()){
                 imp.impulse += Vec2::new(50.0 * FORCE_STRENGTH, 5.0 * FORCE_STRENGTH );
                 velo.linvel.y = 0.0;
+                // spawn ember particles
+                for _ in 0..10 {
+                    ember::spawn_ember(
+                        &mut commands, 
+                        &asset_server,
+                        pos.translation.truncate() + 
+                            Vec2::new(
+                                -1.0, 
+                                rng.rng.gen_range(0.0..0.1)
+                            ) * 60.0,
+                        Vec2::new(-1.0, 0.0,) 
+                            + Vec2::new(
+                                rng.rng.gen_range(-0.5..0.5), 
+                                rng.rng.gen_range(-0.5..0.5)
+                            ) * FORCE_STRENGTH
+                    );
+                }
             } else if key_presses.pressed(KeyCode::KeyD) {
                 velo.linvel += Vec2::new(2.0, 0.0);
             }
