@@ -328,7 +328,7 @@ fn propell_scorch(
                     ember::spawn_ember(
                         &mut commands, 
                         &asset_server,
-                        (
+                        Vec2::new(
                             transform.translation.x - imp_dir.x * 60.0, 
                             transform.translation.y - imp_dir.y * 60.0
                         ),
@@ -426,10 +426,15 @@ fn restart_scorch(
 }
 
 fn character_movement(
-    rc: Res<RapierContext>,
+    mut commands: Commands,
+    asset_server: Res<SceneAsset>, //TODO make functions not need to call this
+
     mut entity_properties: Query<(&mut ExternalImpulse, &mut Velocity, &mut Transform, &mut Scorch)>,
     key_presses: Res<ButtonInput<KeyCode>>,
+
     time: Res<Time>,
+    mut rng: ResMut<RngResource>,
+    rc: Res<RapierContext>,
 ) {
     //I dont want to waste resources checking if it should move unless one of the keys are being pressed
     if key_presses.any_pressed([KeyCode::KeyW, KeyCode::KeyA, KeyCode::KeyS, KeyCode::KeyD, KeyCode::Space]) {
@@ -441,7 +446,7 @@ fn character_movement(
                 Vect::new(0.0, 1.0),
                 1.9,
                 true,
-                QueryFilter::default(),
+                QueryFilter::default().exclude_sensors(),
             ) {
                 scorch.grounded();
                 // jump impulse
@@ -462,6 +467,13 @@ fn character_movement(
                     //println!("double jump!");
                     imp.impulse += Vec2::new(0.0, 30.0 * FORCE_STRENGTH);
                     //TODO add some VFX on double jump also maybe add a flame cost
+                    // spawn particle
+                    ember::spawn_ember(
+                        &mut commands, 
+                        &asset_server,
+                        pos.translation.truncate() + Vec2::new(0.0, -1.0) * 60.0,
+                        Vec2::new(0.0, -1.0,) * rng.rng.gen_range(-0.5..0.5) * FORCE_STRENGTH
+                    );
                 }
             }
             // moving left

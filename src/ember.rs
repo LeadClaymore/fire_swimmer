@@ -86,7 +86,7 @@ fn despawn_particles (
 pub fn spawn_ember(
     commands: &mut Commands,
     asset_server: &Res<SceneAsset>,
-    pos: (f32, f32), 
+    pos: Vec2, 
     imp: Vec2
 ) {
     // spawn particle
@@ -97,7 +97,7 @@ pub fn spawn_ember(
                 custom_size: Some(Vec2::new(10.0, 10.0)),
                 ..default()
             },
-            transform: Transform::from_xyz(pos.0, pos.1, -1.0),
+            transform: Transform::from_xyz(pos.x, pos.y, -1.0),
             ..Default::default()
         },
         EmberComponent::full(),
