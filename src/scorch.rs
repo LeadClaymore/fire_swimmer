@@ -88,6 +88,7 @@ pub struct Scorch {
 
     // pub unlocked_dash: bool,
     // pub unlocked_air_dash: bool,
+    pub is_dead: bool,
 }
 
 #[allow(dead_code)]
@@ -108,6 +109,7 @@ impl Scorch {
                 self.curr_flame -= dmg;
             } else {
                 self.curr_flame = 0.0;
+                self.is_dead = true;
             }
             return true;
         } else {
@@ -121,6 +123,7 @@ impl Scorch {
             self.curr_flame -= dmg;
         } else {
             self.curr_flame = 0.0;
+            self.is_dead = true;
         }
     }
 
@@ -128,6 +131,7 @@ impl Scorch {
     pub fn reset(&mut self) {
         // currently just flame
         self.curr_flame = self.max_flame;
+        self.is_dead = false;
     }
 
     pub fn grounded(&mut self) {
@@ -260,6 +264,7 @@ fn setup_physics(
                 d_dash: 0.0,
 
                 damage_per_frame: 0.0,
+                is_dead: false,
             },
         ))
         .with_children(|parent| {
@@ -587,12 +592,12 @@ fn per_frame_flame_change (
     mut s_query: Query<&mut Scorch>,
 ) {
     if let Ok(mut s_info) = s_query.get_single_mut() {
-        s_info.regen_flame();
-        if s_info.has_flame(s_info.get_dpf()) {
+        if s_info.has_flame(s_info.get_dpf()) && !s_info.is_dead {
             s_info.apply_dpf();
         } else {
-            //TODO Scorch death effects (dpf)
+            println!("Scorch is dead");
         }
+        s_info.regen_flame();
     }
 }
 // end
