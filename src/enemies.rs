@@ -97,6 +97,7 @@ impl EnemyInfo {
         self.within_range
     }
 
+    #[allow(dead_code)]
     pub fn get_dpf(&self) -> f32 {
         self.damage_per_frame
     }

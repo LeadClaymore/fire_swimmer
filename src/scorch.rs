@@ -210,11 +210,10 @@ impl Scorch {
 
 
 #[derive(Component, Clone, Copy, PartialEq)]
-#[allow(dead_code)]
 pub struct DetectRange;
 
+
 #[derive(Component, Clone, Copy, PartialEq)]
-#[allow(dead_code)]
 pub struct ExtinguishCone;
 
 fn setup_physics(
@@ -274,7 +273,7 @@ fn setup_physics(
         .with_children(|parent| {
             // Add the sensor collider as a child
             parent.spawn( (
-                ExtinguishCone, //This is for collisions to determin if they should be in range
+                DetectRange, //This is for collisions to determin if they should be in range
                 Collider::ball(1000.0),
                 Sensor,
                 CollisionGroups::new(
@@ -288,7 +287,7 @@ fn setup_physics(
                 TransformBundle::default(), // Ensure it follows the parent
             ));
             parent.spawn( (
-                DetectRange, //This is for collisions to determin if they should be in range
+                ExtinguishCone, //This is for collisions to determin if they should be in range
                 Collider::round_triangle(
                     Vect::new(0.0, 0.0), 
                     Vect::new(500.0, -75.0), 
@@ -331,7 +330,7 @@ fn propell_scorch(
     asset_server: Res<SceneAsset>,
 
     //gets the extiguish cone's transform
-    ec_query: Query<&mut Transform, With<ExtinguishCone>>,
+    //mut ec_query: Query<&mut Transform, With<ExtinguishCone>>,
 ) {
     // these imputs are used elsewhere so im storing this now
     let (left_click, right_click) = (
@@ -414,6 +413,16 @@ fn propell_scorch(
                             //println!("not a block!");
                         }
                     }
+                    // println!("foo");
+                    // if let Ok(mut e_tran) = ec_query.get_single_mut() {
+                    //     //gets the rotaion in quart from the vec2 we stored it in
+                    //     e_tran.rotate(
+                    //         Quat::from_rotation_z(
+                    //             imp_dir.y.atan2(imp_dir.x)
+                    //         )
+                    //     );
+                    // }
+                    // println!("foo2");
                 }
 
                 //drawing debug line
