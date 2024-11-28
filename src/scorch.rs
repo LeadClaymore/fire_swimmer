@@ -213,6 +213,10 @@ impl Scorch {
 #[allow(dead_code)]
 pub struct DetectRange;
 
+#[derive(Component, Clone, Copy, PartialEq)]
+#[allow(dead_code)]
+pub struct ExtinguishCone;
+
 fn setup_physics(
     mut commands: Commands,
     asset_server: Res<SceneAsset>,
@@ -269,21 +273,39 @@ fn setup_physics(
         ))
         .with_children(|parent| {
             // Add the sensor collider as a child
-            parent
-                .spawn( (
-                    DetectRange, //This is for collisions to determin if they should be in range
-                    Collider::ball(1000.0),
-                    Sensor,
-                    CollisionGroups::new(
-                        //TODO for now it collides with nothing
-                        // G30 is going to be debug objects
-                        Group::GROUP_1,
-                        Group::GROUP_4
-                    ),
-                    ActiveEvents::COLLISION_EVENTS,
-                    ColliderMassProperties::Mass(0.0),
-                    TransformBundle::default(), // Ensure it follows the parent
-                ));
+            parent.spawn( (
+                ExtinguishCone, //This is for collisions to determin if they should be in range
+                Collider::ball(1000.0),
+                Sensor,
+                CollisionGroups::new(
+                    //TODO for now it collides with nothing
+                    // G30 is going to be debug objects
+                    Group::GROUP_1,
+                    Group::GROUP_4
+                ),
+                ActiveEvents::COLLISION_EVENTS,
+                ColliderMassProperties::Mass(0.0),
+                TransformBundle::default(), // Ensure it follows the parent
+            ));
+            parent.spawn( (
+                DetectRange, //This is for collisions to determin if they should be in range
+                Collider::round_triangle(
+                    Vect::new(0.0, 0.0), 
+                    Vect::new(500.0, -75.0), 
+                    Vect::new(500.0, 75.0),
+                    10.0,
+                ),
+                Sensor,
+                CollisionGroups::new(
+                    //TODO for now it collides with nothing
+                    // G30 is going to be debug objects
+                    Group::GROUP_1,
+                    Group::GROUP_4
+                ),
+                ActiveEvents::COLLISION_EVENTS,
+                ColliderMassProperties::Mass(0.0),
+                TransformBundle::default(), // Ensure it follows the parent
+            ));
                 
         })
         ;
@@ -307,6 +329,9 @@ fn propell_scorch(
     mut bi_query: Query<&mut BlockInfo>,
     //for spawning embers with the right texture
     asset_server: Res<SceneAsset>,
+
+    //gets the extiguish cone's transform
+    ec_query: Query<&mut Transform, With<ExtinguishCone>>,
 ) {
     // these imputs are used elsewhere so im storing this now
     let (left_click, right_click) = (
@@ -596,6 +621,7 @@ fn per_frame_flame_change (
             s_info.apply_dpf();
         } else {
             println!("Scorch is dead");
+            s_info.is_dead = false;
         }
         s_info.regen_flame();
     }
