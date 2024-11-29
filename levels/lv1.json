@@ -125,6 +125,23 @@
                 "within_range": false,
                 "damage_per_frame": 0.0
             }
+        },
+        {
+            "pos": [2000.0, 100.0],
+            "size": 100.0,
+            "e_info": {
+                "e_type": "Stationary",
+                "health": 1000.0,
+                "move_speed": 0.0,
+                "dmg": 20.0,
+                "range": 0.0,
+                "size": 100.0,
+                "cooldown": 1.0,
+                "active_cooldown": 0.0,
+                "stunned_until": 0.0,
+                "within_range": false,
+                "damage_per_frame": 0.0
+            }
         }
     ]
 }
