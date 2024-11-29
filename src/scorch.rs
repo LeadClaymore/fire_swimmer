@@ -314,7 +314,7 @@ fn setup_physics(
 fn propell_scorch(
     mut commands: Commands,
     // transform of scorch
-    mut query: Query<(&mut ExternalImpulse, &Transform, &mut Scorch)>,
+    mut s_query: Query<(Entity, &mut ExternalImpulse, &Transform, &mut Scorch)>,
     // window and camera stuff
     q_window: Query<&Window, With<PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform)>,
@@ -330,7 +330,8 @@ fn propell_scorch(
     asset_server: Res<SceneAsset>,
 
     //gets the extiguish cone's transform
-    //mut ec_query: Query<&mut Transform, With<ExtinguishCone>>,
+    // mut s_child_query: Query<(Entity, &Parent, &mut Transform)>,
+    // ec_query: Query<(), With<ExtinguishCone>>,
 ) {
     // these imputs are used elsewhere so im storing this now
     let (left_click, right_click) = (
@@ -355,10 +356,11 @@ fn propell_scorch(
         {
             // get the forces transform and the scorch info on the player
             for (
+                _s_ent,
                 mut impulse, 
                 transform, 
                 mut player
-            ) in query.iter_mut() {
+            ) in s_query.iter_mut() {
                 // the camera is locked y wise but x wise its tracking the main character's x 
                 // so you only need to consiter the difference in y and the x position of the mouse
                 // if I locked the y to the charater then I would only need to consiter the mouse position
@@ -413,16 +415,16 @@ fn propell_scorch(
                             //println!("not a block!");
                         }
                     }
-                    // println!("foo");
-                    // if let Ok(mut e_tran) = ec_query.get_single_mut() {
-                    //     //gets the rotaion in quart from the vec2 we stored it in
-                    //     e_tran.rotate(
-                    //         Quat::from_rotation_z(
-                    //             imp_dir.y.atan2(imp_dir.x)
-                    //         )
-                    //     );
+                    // This does not work. I think its because I get the transform of its parent earlier in the code
+                    // for (_child_ent, parent, mut c_trans) in s_child_query.iter_mut() {
+                    //     if ec_query.get(parent.get()).is_ok() {
+                    //         c_trans.rotate(
+                    //             Quat::from_rotation_z(
+                    //                 imp_dir.y.atan2(imp_dir.x)
+                    //             )
+                    //         );
+                    //     }
                     // }
-                    // println!("foo2");
                 }
 
                 //drawing debug line
