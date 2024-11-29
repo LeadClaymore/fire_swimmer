@@ -106,7 +106,8 @@
                 "active_cooldown": 0.0,
                 "stunned_until": 0.0,
                 "within_range": false,
-                "damage_per_frame": 0.0
+                "damage_per_frame": 0.0,
+                "moveable": true
             }
         },
         {
@@ -123,7 +124,8 @@
                 "active_cooldown": 0.0,
                 "stunned_until": 0.0,
                 "within_range": false,
-                "damage_per_frame": 0.0
+                "damage_per_frame": 0.0,
+                "moveable": true
             }
         },
         {
@@ -140,7 +142,8 @@
                 "active_cooldown": 0.0,
                 "stunned_until": 0.0,
                 "within_range": false,
-                "damage_per_frame": 0.0
+                "damage_per_frame": 0.0,
+                "moveable": false
             }
         }
     ]

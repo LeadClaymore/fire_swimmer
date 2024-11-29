@@ -42,6 +42,7 @@ pub struct EnemyInfo {
     pub stunned_until: f32,
     pub within_range: bool,
     pub damage_per_frame: f32,
+    pub moveable: bool,
 }
 
 impl EnemyInfo {
@@ -112,6 +113,10 @@ impl EnemyInfo {
 
     pub fn clear_dpf(&mut self) {
         self.damage_per_frame = 0.0;
+    }
+
+    pub fn is_moveable(&self) -> bool{
+        self.moveable
     }
 }
 
@@ -249,7 +254,7 @@ pub fn spawn_enemy(
     let t_texture = match e_info.e_type {
         EnemyType::RunDown => asset_server.t_enemy.clone(),
         EnemyType::Ranged => asset_server.t_enemy2.clone(),
-        EnemyType::Stationary => asset_server.t_temp.clone(),
+        EnemyType::Stationary => asset_server.t_enemy3.clone(),
         _ => asset_server.t_temp.clone(),
     };
 

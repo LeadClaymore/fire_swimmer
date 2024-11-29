@@ -100,7 +100,9 @@ fn collision_handling(
                             } else {
                                 if let Some(dir) = get_dir_to(e1, e2, &tf_query) {
                                     entity_knockback(e1, &mut imp_query, dir);
-                                    entity_knockback(e2, &mut imp_query, -dir);
+                                    if en_info.is_moveable() {
+                                        entity_knockback(e2, &mut imp_query, -dir);
+                                    }
                                     en_info.stun_until(time.elapsed_seconds() + 5.0);
                                     //println!("stunned eneny");
                                 } else {
