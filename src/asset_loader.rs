@@ -40,6 +40,9 @@ pub struct SceneAsset {
     pub t_enemy_p: Handle<Image>,
     pub t_enemy2: Handle<Image>,
     pub t_enemy3: Handle<Image>,
+    pub t_enemy4: Handle<Image>,
+    pub t_enemy5: Handle<Image>,
+    pub t_enemy6: Handle<Image>,
     pub t_block_unburnable: Handle<Image>,
     pub t_block_insta_burn: Handle<Image>,
 }
@@ -89,6 +92,9 @@ fn load_assets(
         scene_assets.t_enemy_p = loading_assets.image_handles[7].clone();
         scene_assets.t_enemy2 = loading_assets.image_handles[8].clone();
         scene_assets.t_enemy3 = loading_assets.image_handles[9].clone();
+        scene_assets.t_enemy4 = loading_assets.image_handles[10].clone();
+        scene_assets.t_enemy5 = loading_assets.image_handles[11].clone();
+        scene_assets.t_enemy6 = loading_assets.image_handles[12].clone();
         //scene_assets.t_ = loading_assets.image_handles[7].clone();
         
         // the loading assets is now redundent and less organgized compared to the scene assets
@@ -114,6 +120,9 @@ fn preload_textures(
         asset_server.load("sprites/t_enemy_p.png"),
         asset_server.load("sprites/t_enemy2.png"),
         asset_server.load("sprites/t_enemy3.png"),
+        asset_server.load("sprites/t_enemy4.png"),
+        asset_server.load("sprites/t_enemy5.png"),
+        asset_server.load("sprites/t_enemy6.png"),
         //asset_server.load("sprites/t_.png"),
     ];
     handle_res.image_handles = texture_handles;

@@ -127,6 +127,8 @@ pub enum EnemyType {
     RunDown,
     Ranged,
     Stationary,
+    StationaryRanged,
+    Summoner,
 }
 
 /// enum to store all the projectile structs
@@ -213,7 +215,10 @@ fn enemy_movement_system(
                     // apply impulse towards scorch times the force str times the speed of an enemy
                     e_imp.impulse += dir * ENEMY_FORCE_STRENGTH * e_info.speed();
 
-                } else if e_info.e_type == EnemyType::Ranged {
+                } else if 
+                    e_info.e_type == EnemyType::Ranged 
+                    || e_info.e_type == EnemyType::StationaryRanged 
+                {
                     // if scorch is within range, stop moving
                     if e_info.is_within_range(scorch_pos.distance(e_trans.translation.truncate())) {
                         e_vel.linvel = Vec2::ZERO;
