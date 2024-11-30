@@ -245,10 +245,10 @@ fn enemy_movement_system(
                 } else if e_info.e_type == EnemyType::StationaryRanged {
                     //println!("LOS");
                     if let Some((rc_entity, _toi)) = &rc.cast_ray(
-                        scorch_pos,
-                        (e_trans.translation.truncate() - scorch_pos).normalize(),
+                        e_trans.translation.truncate() + dir * (e_info.size + 1.0),
+                        dir,
                         scorch_pos.distance(e_trans.translation.truncate()),
-                        true,
+                        false,
                         QueryFilter::default().exclude_sensors(),
                     ) {
                         if is_s_query.get(*rc_entity).is_ok() {
@@ -264,7 +264,7 @@ fn enemy_movement_system(
                                 );
                             }
                         } else {
-
+                            //println!("entity not scorch {:?}, with toi: {}", rc_entity, _toi);
                         }
                     } else {
                         println!("stationary enemy raycast error");
