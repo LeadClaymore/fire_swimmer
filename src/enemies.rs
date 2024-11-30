@@ -188,11 +188,14 @@ fn enemy_movement_system(
     time: Res<Time>,
     mut commands: Commands,
     mut enemy_query: Query<(&mut Velocity, &mut ExternalImpulse, &Transform, &mut EnemyInfo)>,
-    scorch_query: Query<&Transform, With<Scorch>>,
+    s_trans_query: Query<&Transform, With<Scorch>>,
     asset_server: Res<SceneAsset>,
+
+    rc: Res<RapierContext>,
+    is_s_query: Query<(), With<Scorch>>,
 ) {
     // takes the transform from scorch, and maps the 2d + z space into a 2d space
-    if let Ok(scorch_pos) = scorch_query.get_single()
+    if let Ok(scorch_pos) = s_trans_query.get_single()
         .and_then(|scor_tran| Ok(scor_tran.translation.truncate())) 
     {
         // for each enemy in the map
@@ -216,8 +219,7 @@ fn enemy_movement_system(
                     e_imp.impulse += dir * ENEMY_FORCE_STRENGTH * e_info.speed();
 
                 } else if 
-                    e_info.e_type == EnemyType::Ranged 
-                    || e_info.e_type == EnemyType::StationaryRanged 
+                    e_info.e_type == EnemyType::Ranged
                 {
                     // if scorch is within range, stop moving
                     if e_info.is_within_range(scorch_pos.distance(e_trans.translation.truncate())) {
@@ -240,7 +242,34 @@ fn enemy_movement_system(
                     }
                 } else if e_info.e_type == EnemyType::Stationary {
                     // for now nothing, might add turning later
-                }     
+                } else if e_info.e_type == EnemyType::StationaryRanged {
+                    //println!("LOS");
+                    if let Some((rc_entity, _toi)) = &rc.cast_ray(
+                        scorch_pos,
+                        (e_trans.translation.truncate() - scorch_pos).normalize(),
+                        scorch_pos.distance(e_trans.translation.truncate()),
+                        true,
+                        QueryFilter::default().exclude_sensors(),
+                    ) {
+                        if is_s_query.get(*rc_entity).is_ok() {
+                            if e_info.handle_shooting(time.elapsed_seconds()) {
+                                ranged_enemy_shoot( 
+                                    &mut commands, 
+                                    //TODO I think I need a ofset for spawning
+                                    e_trans.translation.truncate() + dir * (e_info.size + 20.0),
+                                    dir,
+                                    ProjectileType::default(),
+                                    //*e_info,
+                                    &asset_server,
+                                );
+                            }
+                        } else {
+
+                        }
+                    } else {
+                        println!("stationary enemy raycast error");
+                    }
+                }
             }
         }
     }
@@ -260,6 +289,8 @@ pub fn spawn_enemy(
         EnemyType::RunDown => asset_server.t_enemy.clone(),
         EnemyType::Ranged => asset_server.t_enemy2.clone(),
         EnemyType::Stationary => asset_server.t_enemy3.clone(),
+        EnemyType::StationaryRanged => asset_server.t_enemy4.clone(),
+        EnemyType::Summoner => asset_server.t_enemy5.clone(),
         _ => asset_server.t_temp.clone(),
     };
 
