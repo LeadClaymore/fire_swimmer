@@ -193,6 +193,7 @@ fn enemy_movement_system(
 
     rc: Res<RapierContext>,
     is_s_query: Query<(), With<Scorch>>,
+    is_p_query: Query<(), With<ProjectileType>>,
 ) {
     // takes the transform from scorch, and maps the 2d + z space into a 2d space
     if let Ok(scorch_pos) = s_trans_query.get_single()
@@ -251,7 +252,13 @@ fn enemy_movement_system(
                         false,
                         QueryFilter::default().exclude_sensors(),
                     ) {
-                        if is_s_query.get(*rc_entity).is_ok() {
+                        //TODO fix multishot from stationary ranged
+                        // Need to do a deeper query of objects either learn how to use the QueryFilter
+                        // or filter through the objects between e and s
+                        if 
+                            is_s_query.get(*rc_entity).is_ok() 
+                            || is_p_query.get(*rc_entity).is_ok() 
+                        {
                             if e_info.handle_shooting(time.elapsed_seconds()) {
                                 ranged_enemy_shoot( 
                                     &mut commands, 

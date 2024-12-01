@@ -147,7 +147,7 @@
             }
         },
         {
-            "pos": [2000.0, 100.0],
+            "pos": [2000.0, 1000.0],
             "size": 100.0,
             "e_info": {
                 "e_type": "StationaryRanged",
@@ -162,6 +162,24 @@
                 "within_range": false,
                 "damage_per_frame": 0.0,
                 "moveable": false
+            }
+        },
+        {
+            "pos": [2000.0, 100.0],
+            "size": 25.0,
+            "e_info": {
+                "e_type": "Summoner",
+                "health": 100.0,
+                "move_speed": 10.0,
+                "dmg": 5.0,
+                "range": 500.0,
+                "size": 25.0,
+                "cooldown": 10.0,
+                "active_cooldown": 0.0,
+                "stunned_until": 0.0,
+                "within_range": false,
+                "damage_per_frame": 0.0,
+                "moveable": true
             }
         }
     ]
