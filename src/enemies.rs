@@ -65,6 +65,7 @@ impl Default for EnemyInfo {
     }
 }
 
+#[allow(unreachable_patterns)]
 impl EnemyInfo {
     /// this reduces health by the damage taken and returns if it is at or bellow 0
     pub fn take_dmg(&mut self, dmg: f32) -> bool {
@@ -138,11 +139,26 @@ impl EnemyInfo {
     pub fn is_moveable(&self) -> bool{
         self.moveable
     }
+
+    ///returns the texture from the enemy type or returns the temp asset
+    pub fn get_image(
+        self,
+        asset_server: &Res<SceneAsset>,
+    ) -> Handle<Image>{
+        return match self.e_type {
+            EnemyType::RunDown => asset_server.t_enemy.clone(),
+            EnemyType::Ranged => asset_server.t_enemy2.clone(),
+            EnemyType::Stationary => asset_server.t_enemy3.clone(),
+            EnemyType::StationaryRanged => asset_server.t_enemy4.clone(),
+            EnemyType::Summoner => asset_server.t_enemy5.clone(),
+            _ => asset_server.t_temp.clone(),
+        };
+    }
 }
 
 /// the type of enemy
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Default)]
-#[allow(dead_code)]
+#[allow(dead_code, unreachable_patterns)]
 pub enum EnemyType {
     #[default]
     RunDown,
@@ -159,37 +175,49 @@ pub enum ProjectileType {
     Contact(ContactProj),
 }
 
-#[allow(dead_code)]
-impl ProjectileType {
-    pub fn default() -> ProjectileType {
+impl Default for ProjectileType {
+    fn default() -> Self {
         ProjectileType::Contact(ContactProj {
             dmg: 10.0,
             spd: 10.0,
             size: 10.0,
         })
     }
+}
 
-
-
+#[allow(dead_code, unreachable_patterns)]
+impl ProjectileType {
     pub fn get_size(&self) -> f32 {
         match self {
             ProjectileType::Contact(foo) => foo.size,
-            //_ => 0.0,
+            _ => 0.0,
         }
     }
 
     pub fn get_dmg(&self) -> f32 {
         match self {
             ProjectileType::Contact(foo) => foo.dmg,
-            //_ => 0.0,
+            _ => 0.0,
         }
     }
 
     pub fn get_spd(&self) -> f32 {
         match self {
             ProjectileType::Contact(foo) => foo.spd,
-            //_ => 0.0,
+            _ => 0.0,
         }
+    }
+
+    /// takes the projectile type and returns the sprite of the projectile
+    pub fn get_sprite(
+        &self,
+        asset_server: &Res<SceneAsset>,
+    ) -> Handle<Image> {
+        //TODO add other types of projectiles so I can change what they look like
+        return match self {
+            ProjectileType::Contact(_) => asset_server.t_enemy_p.clone(),
+            _ => asset_server.t_temp.clone(),
+        };
     }
 }
 
@@ -336,20 +364,10 @@ pub fn spawn_enemy(
     e_size: f32,
     asset_server: &Res<SceneAsset>,
 ) {
-    // this sets the texture based on what the enemy is
-    let t_texture = match e_info.e_type {
-        EnemyType::RunDown => asset_server.t_enemy.clone(),
-        EnemyType::Ranged => asset_server.t_enemy2.clone(),
-        EnemyType::Stationary => asset_server.t_enemy3.clone(),
-        EnemyType::StationaryRanged => asset_server.t_enemy4.clone(),
-        EnemyType::Summoner => asset_server.t_enemy5.clone(),
-        _ => asset_server.t_temp.clone(),
-    };
-
     commands
         .spawn((
             SpriteBundle {
-                texture: t_texture,
+                texture: e_info.get_image(&asset_server),
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(e_size * 2.0, e_size * 2.0)),
                     ..default()
@@ -389,17 +407,11 @@ pub fn ranged_enemy_shoot(
     //e_type: EnemyInfo,
     asset_server: &Res<SceneAsset>,
 ) {
-    //TODO add other types of projectiles so I can change what they look like
-    let t_texture = match p_type {
-        ProjectileType::Contact(_) => asset_server.t_enemy_p.clone(),
-        _ => asset_server.t_temp.clone(),
-    };
-
     //println!("shoot");
     commands
         .spawn((
             SpriteBundle {
-                texture: t_texture,
+                texture: p_type.get_sprite(asset_server),
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(p_type.get_size() * 2.0, p_type.get_size() * 2.0)),
                     ..default()
@@ -430,58 +442,3 @@ pub fn ranged_enemy_shoot(
             ActiveEvents::COLLISION_EVENTS,
         ));
 }
-
-//idk why I made this, I had a spawn enemy
-
-// #[allow(dead_code, unreachable_patterns)]
-// /// spawns an enemy
-// pub fn summon_enemy(
-//     commands: &mut Commands,
-//     e_pos: Vec2,
-//     e_info: EnemyInfo,
-//     e_size: f32,
-//     asset_server: &Res<SceneAsset>,
-// ) {
-//     // this sets the texture based on what the enemy is
-//     let t_texture = match e_info.e_type {
-//         EnemyType::RunDown => asset_server.t_enemy.clone(),
-//         EnemyType::Ranged => asset_server.t_enemy2.clone(),
-//         EnemyType::Stationary => asset_server.t_enemy3.clone(),
-//         EnemyType::StationaryRanged => asset_server.t_enemy4.clone(),
-//         EnemyType::Summoner => asset_server.t_enemy5.clone(),
-//         _ => asset_server.t_temp.clone(),
-//     };
-
-//     //println!("shoot");
-//     commands
-//         .spawn((
-//             SpriteBundle {
-//                 texture: t_texture,
-//                 sprite: Sprite {
-//                     custom_size: Some(Vec2::new(e_size * 2.0, e_size * 2.0)),
-//                     ..default()
-//                 },
-//                 transform: Transform::from_xyz(e_pos.x, e_pos.y, -1.0),
-//                 ..Default::default()
-//             },
-//             // position and enemy info
-//             //TransformBundle::from(Transform::from_xyz(e_pos.x, e_pos.y, 0.0)),
-//             Collider::ball(e_size),
-//             e_info,
-
-//             // default settings
-//             CollisionGroups::new(
-//                 // G1 is Scorch, G2 is embers, G3 is blocks, G4 is enemies, G5 is enemy_projectiles
-//                 Group::GROUP_4,
-//                 Group::GROUP_1 | Group::GROUP_2 | Group::GROUP_3,
-//             ),
-//             RigidBody::Dynamic,
-//             Restitution::coefficient(0.5),
-//             ExternalImpulse::default(),
-//             Velocity::default(),
-//             GravityScale(0.0),
-//             ColliderMassProperties::Density(1.0),
-//             LockedAxes::ROTATION_LOCKED,
-//             ActiveEvents::COLLISION_EVENTS,
-//         ));
-// }
