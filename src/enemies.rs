@@ -45,6 +45,26 @@ pub struct EnemyInfo {
     pub moveable: bool,
 }
 
+// This should not be called instead to fill in gaps in the other enemy spawns
+impl Default for EnemyInfo {
+    fn default() -> Self {
+        Self {
+            e_type: EnemyType::RunDown,
+            health: 100.0,
+            move_speed: 10.0,
+            dmg: 10.0,
+            range: 250.0,
+            size: 25.0,
+            cooldown: 1.0,
+            active_cooldown: 0.0,
+            stunned_until: 0.0,
+            within_range: false,
+            damage_per_frame: 0.0,
+            moveable: true,
+        }
+    }
+}
+
 impl EnemyInfo {
     /// this reduces health by the damage taken and returns if it is at or bellow 0
     pub fn take_dmg(&mut self, dmg: f32) -> bool {
@@ -121,9 +141,10 @@ impl EnemyInfo {
 }
 
 /// the type of enemy
-#[derive(Debug, Clone, Copy, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Default)]
 #[allow(dead_code)]
 pub enum EnemyType {
+    #[default]
     RunDown,
     Ranged,
     Stationary,
@@ -219,9 +240,7 @@ fn enemy_movement_system(
                     // apply impulse towards scorch times the force str times the speed of an enemy
                     e_imp.impulse += dir * ENEMY_FORCE_STRENGTH * e_info.speed();
 
-                } else if 
-                    e_info.e_type == EnemyType::Ranged
-                {
+                } else if e_info.e_type == EnemyType::Ranged {
                     // if scorch is within range, stop moving
                     if e_info.is_within_range(scorch_pos.distance(e_trans.translation.truncate())) {
                         e_vel.linvel = Vec2::ZERO;
@@ -275,6 +294,32 @@ fn enemy_movement_system(
                         }
                     } else {
                         println!("stationary enemy raycast error");
+                    }
+                } else if e_info.e_type == EnemyType::Summoner {
+                    // if scorch is within range, stop moving
+                    if e_info.is_within_range(scorch_pos.distance(e_trans.translation.truncate())) {
+                        e_vel.linvel = Vec2::ZERO;
+                        if e_info.handle_shooting(time.elapsed_seconds()) {
+                            let s_enemy_size: f32 = 15.0;
+                            spawn_enemy( 
+                                &mut commands, 
+                                //TODO I think I need a ofset for spawning
+                                e_trans.translation.truncate() + dir * (e_info.size + s_enemy_size + 1.0),
+                                EnemyInfo {
+                                    size: s_enemy_size,
+                                    move_speed: 7.5,
+                                    health: 50.0,
+                                    dmg: 7.5,
+                                    ..default()
+                                },
+                                s_enemy_size,
+                                &asset_server,
+                            );
+                        }
+
+                    // if scorch is outside of range, move to scorch, at the enemies speed * const
+                    } else {
+                        e_imp.impulse += dir * ENEMY_FORCE_STRENGTH * e_info.speed();
                     }
                 }
             }
@@ -346,7 +391,7 @@ pub fn ranged_enemy_shoot(
 ) {
     //TODO add other types of projectiles so I can change what they look like
     let t_texture = match p_type {
-        ProjectileType::Contact(_) => asset_server.t_enemy.clone(),
+        ProjectileType::Contact(_) => asset_server.t_enemy_p.clone(),
         _ => asset_server.t_temp.clone(),
     };
 
@@ -385,3 +430,58 @@ pub fn ranged_enemy_shoot(
             ActiveEvents::COLLISION_EVENTS,
         ));
 }
+
+//idk why I made this, I had a spawn enemy
+
+// #[allow(dead_code, unreachable_patterns)]
+// /// spawns an enemy
+// pub fn summon_enemy(
+//     commands: &mut Commands,
+//     e_pos: Vec2,
+//     e_info: EnemyInfo,
+//     e_size: f32,
+//     asset_server: &Res<SceneAsset>,
+// ) {
+//     // this sets the texture based on what the enemy is
+//     let t_texture = match e_info.e_type {
+//         EnemyType::RunDown => asset_server.t_enemy.clone(),
+//         EnemyType::Ranged => asset_server.t_enemy2.clone(),
+//         EnemyType::Stationary => asset_server.t_enemy3.clone(),
+//         EnemyType::StationaryRanged => asset_server.t_enemy4.clone(),
+//         EnemyType::Summoner => asset_server.t_enemy5.clone(),
+//         _ => asset_server.t_temp.clone(),
+//     };
+
+//     //println!("shoot");
+//     commands
+//         .spawn((
+//             SpriteBundle {
+//                 texture: t_texture,
+//                 sprite: Sprite {
+//                     custom_size: Some(Vec2::new(e_size * 2.0, e_size * 2.0)),
+//                     ..default()
+//                 },
+//                 transform: Transform::from_xyz(e_pos.x, e_pos.y, -1.0),
+//                 ..Default::default()
+//             },
+//             // position and enemy info
+//             //TransformBundle::from(Transform::from_xyz(e_pos.x, e_pos.y, 0.0)),
+//             Collider::ball(e_size),
+//             e_info,
+
+//             // default settings
+//             CollisionGroups::new(
+//                 // G1 is Scorch, G2 is embers, G3 is blocks, G4 is enemies, G5 is enemy_projectiles
+//                 Group::GROUP_4,
+//                 Group::GROUP_1 | Group::GROUP_2 | Group::GROUP_3,
+//             ),
+//             RigidBody::Dynamic,
+//             Restitution::coefficient(0.5),
+//             ExternalImpulse::default(),
+//             Velocity::default(),
+//             GravityScale(0.0),
+//             ColliderMassProperties::Density(1.0),
+//             LockedAxes::ROTATION_LOCKED,
+//             ActiveEvents::COLLISION_EVENTS,
+//         ));
+// }
