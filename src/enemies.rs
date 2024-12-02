@@ -231,6 +231,7 @@ pub struct ContactProj {
     size: f32,
 }
 
+//TODO make enemies have a max velocity so it does move like a bullet
 // TIL: crashed when used mutable transform remember this
 /// every update, this hanndles moving enemies
 fn enemy_movement_system(
@@ -297,14 +298,18 @@ fn enemy_movement_system(
                         dir,
                         scorch_pos.distance(e_trans.translation.truncate()),
                         false,
-                        QueryFilter::default().exclude_sensors(),
+                        QueryFilter::default().exclude_sensors().groups(CollisionGroups::new(
+                            // G1 is Scorch, G2 is embers, G3 is blocks, G4 is enemies, G5 is enemy_projectiles
+                            Group::GROUP_4,
+                            Group::GROUP_1 | Group::GROUP_3,
+                        )),
                     ) {
                         //TODO fix multishot from stationary ranged
                         // Need to do a deeper query of objects either learn how to use the QueryFilter
                         // or filter through the objects between e and s
                         if 
                             is_s_query.get(*rc_entity).is_ok() 
-                            || is_p_query.get(*rc_entity).is_ok() 
+                            //|| is_p_query.get(*rc_entity).is_ok() 
                         {
                             if e_info.handle_shooting(time.elapsed_seconds()) {
                                 ranged_enemy_shoot( 

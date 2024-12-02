@@ -500,6 +500,7 @@ fn character_movement(
         // get the pos and vel of the Scorch
         for (mut imp, mut velo , pos, mut scorch)in entity_properties.iter_mut() {
             // this checks if theres an entity below the shpere within 2m
+            //TODO after learning about queryfilters exclude embers, projectiles and enemies
             if let Some((_entity, _toi)) = &rc.cast_ray(
                 Vect::new(pos.translation.x, pos.translation.y - 52.0),
                 Vect::new(0.0, 1.0),
