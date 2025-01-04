@@ -91,13 +91,10 @@ pub fn spawn_ember(
 ) {
     // spawn particle
     commands.spawn((
-        SpriteBundle {
-            texture: asset_server.t_ember.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(10.0, 10.0)),
-                ..default()
-            },
-            transform: Transform::from_xyz(pos.x, pos.y, -1.0),
+        TransformBundle::from(Transform::from_xyz(pos.x, pos.y, -1.0)),
+        Sprite {
+            image: asset_server.t_ember.clone(),
+            custom_size: Some(Vec2::new(10.0, 10.0)),
             ..Default::default()
         },
         EmberComponent::full(),

@@ -234,19 +234,15 @@ fn setup_physics(
             ),
             ActiveEvents::COLLISION_EVENTS,
             Restitution::coefficient(0.1),
-            //TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)),
             ExternalImpulse::default(),
             Velocity::default(),
             GravityScale(0.5),
             ColliderMassProperties::Density(1.0),
             LockedAxes::ROTATION_LOCKED,
-            SpriteBundle {
-                texture: asset_server.t_scorch.clone(),
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(100.0, 100.0)),
-                    ..default()
-                },
-                transform: Transform::from_xyz(0.0, 0.0, -1.0),
+            TransformBundle::from(Transform::from_xyz(0.0, 0.0, -1.0)),
+            Sprite {
+                image: asset_server.t_scorch.clone(),
+                custom_size: Some(Vec2::new(100.0, 100.0)),
                 ..Default::default()
             },
             Damping {
@@ -342,7 +338,7 @@ fn propell_scorch(
         // I found this example in the bevy cookbook
         // https://bevy-cheatbook.github.io/cookbook/cursor2world.html
         // this gets the camera and the transform and window
-        let (camera, camera_transform) = q_camera.single();
+        let (&camera, camera_transform) = q_camera.single();
         let window = q_window.single();
         // this gets the window by getting the cursor pos on screen, (.cursor_position)
         // convert that pos on screen to a transform pos and dir in ray3d, (.viewport_to_world)
@@ -350,10 +346,8 @@ fn propell_scorch(
         // then discards the z using truncate, (.truncate)
         // tada a vec2 of the position of the camera
         // god I wish I knew about these functions before
-        if let Some(world_position) = window.cursor_position()
-            .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
-            .map(|ray| ray.origin.truncate())
-        {
+        if let Some(cursor) = window.cursor_position() {
+            let world_position = camera.viewport_to_world_2d(camera_transform, cursor).unwrap();
             // get the forces transform and the scorch info on the player
             for (
                 _s_ent,

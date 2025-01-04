@@ -82,21 +82,18 @@ fn spawn_from_json(
 
         commands
             .spawn((
-                SpriteBundle {
-                    texture: b_texture,
-                    transform: Transform {
-                        translation: Vec3::new(block.pos[0], block.pos[1], -1.0),
-                        scale: Vec3::new(
-                            block.size[0] / 100.0, 
-                            block.size[1] / 100.0,
-                            1.0
-                        ),
-                        ..Default::default()
-                    },
-                    sprite: Sprite {
-                        custom_size: Some(Vec2::new(200.0, 200.0)),
-                        ..default()
-                    },
+                TransformBundle::from( Transform {
+                    translation: Vec3::new(block.pos[0], block.pos[1], -1.0),
+                    scale: Vec3::new(
+                        block.size[0] / 100.0, 
+                        block.size[1] / 100.0,
+                        1.0
+                    ),
+                    ..Default::default()
+                }),
+                Sprite {
+                    image: b_texture,
+                    custom_size: Some(Vec2::new(200.0, 200.0)),
                     ..Default::default()
                 },
                 Collider::cuboid(100.0, 100.0),

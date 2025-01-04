@@ -371,13 +371,10 @@ pub fn spawn_enemy(
 ) {
     commands
         .spawn((
-            SpriteBundle {
-                texture: e_info.get_image(&asset_server),
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(e_size * 2.0, e_size * 2.0)),
-                    ..default()
-                },
-                transform: Transform::from_xyz(e_pos.x, e_pos.y, -1.0),
+            TransformBundle::from(Transform::from_xyz(e_pos.x, e_pos.y, -1.0)),
+            Sprite {
+                image: e_info.get_image(&asset_server),
+                custom_size: Some(Vec2::new(e_size * 2.0, e_size * 2.0)),
                 ..Default::default()
             },
             // position and enemy info
@@ -415,13 +412,10 @@ pub fn ranged_enemy_shoot(
     //println!("shoot");
     commands
         .spawn((
-            SpriteBundle {
-                texture: p_type.get_sprite(asset_server),
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(p_type.get_size() * 2.0, p_type.get_size() * 2.0)),
-                    ..default()
-                },
-                transform: Transform::from_xyz(p_pos.x, p_pos.y, -1.0),
+            TransformBundle::from(Transform::from_xyz(p_pos.x, p_pos.y, -1.0)),
+            Sprite {
+                image: p_type.get_sprite(asset_server),
+                custom_size: Some(Vec2::new(p_type.get_size() * 2.0, p_type.get_size() * 2.0)),
                 ..Default::default()
             },
             // from data provided
